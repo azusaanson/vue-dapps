@@ -20,7 +20,7 @@ export const useMetamask = () => {
           type: "ERC20",
           options: {
             address: MYTOKEN_ADDRESS,
-            symbol: "MYT",
+            symbol: "MTK",
             decimals: 18,
           },
         },

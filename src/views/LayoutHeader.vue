@@ -1,13 +1,15 @@
 <template>
-  <nav>
+  <header class="header">
     <router-link to="/">My Governance</router-link>
     <el-button-group v-if="isWalletConnected">
-      <el-button>{{ balance }}</el-button>
-      <el-button>{{ address }}</el-button>
-      <el-button>Disconnect</el-button>
+      <el-button round plain>{{ balance }} MTK</el-button>
+      <el-button round type="primary" plain>{{ address }}</el-button>
+      <el-button type="danger" round plain>Disconnect</el-button>
     </el-button-group>
-    <el-button @click="connectWallet" v-else>Connect Wallet</el-button>
-  </nav>
+    <el-button round type="primary" plain @click="connectWallet" v-else
+      >Connect Wallet</el-button
+    >
+  </header>
   <router-view />
 </template>
 
@@ -40,4 +42,12 @@ onMounted(() => {
 });
 </script>
 
-<style></style>
+<style>
+.header {
+  width: 60%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  justify-content: space-around;
+  margin: 50px 0 50px 20%;
+}
+</style>
