@@ -4,7 +4,6 @@
     <el-button-group v-if="isWalletConnected">
       <el-button round plain>{{ balance }} MTK</el-button>
       <el-button round type="primary" plain>{{ address }}</el-button>
-      <el-button type="danger" round plain>Disconnect</el-button>
     </el-button-group>
     <el-button round type="primary" plain @click="connectWallet" v-else
       >Connect Wallet</el-button
