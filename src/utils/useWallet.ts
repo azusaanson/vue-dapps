@@ -14,17 +14,26 @@ export const useMetamask = () => {
 
   const addToken = async () => {
     if (window.ethereum) {
-      await window.ethereum.request({
-        method: "wallet_watchAsset",
-        params: {
-          type: "ERC20",
-          options: {
-            address: MYTOKEN_ADDRESS,
-            symbol: "MTK",
-            decimals: 18,
+      await window.ethereum
+        .request({
+          method: "wallet_watchAsset",
+          params: {
+            type: "ERC20",
+            options: {
+              address: MYTOKEN_ADDRESS,
+              symbol: "MTK",
+              decimals: 18,
+            },
           },
-        },
-      });
+        })
+        .then((success) => {
+          if (success) {
+            console.log("MTK successfully added to wallet!");
+          } else {
+            throw new Error("Something went wrong.");
+          }
+        })
+        .catch(console.error);
     }
   };
 
