@@ -4,7 +4,7 @@
     <el-button-group v-if="isWalletConnected">
       <el-button round plain>
         <el-dropdown>
-          <el-button link> {{ balance }} {{ unit }} </el-button>
+          <el-button link> {{ balance }} {{ MYTOKEN_SYMBOL }} </el-button>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item @click="addToken"
@@ -29,6 +29,7 @@
 import { useMetamask } from "@/utils/useWallet";
 import { useMyToken } from "@/utils/useMyToken";
 import { shortAddress } from "@/utils/useAddress";
+import { MYTOKEN_SYMBOL } from "@/consts/index";
 import { ref, onMounted, computed } from "vue";
 
 const { connectMetamask, getAccount, addToken } = useMetamask();
@@ -37,7 +38,6 @@ const { getBalance } = useMyToken();
 const isWalletConnected = ref(false);
 const address = ref("");
 const balance = ref(0);
-const unit = ref("");
 
 const computedShortAddress = computed(() => {
   return shortAddress(address.value);
@@ -50,8 +50,7 @@ const getAccountAndBalance = () => {
       address.value = res;
 
       getBalance(address.value).then((balanceRes) => {
-        balance.value = Number(balanceRes.balance);
-        unit.value = balanceRes.unit;
+        balance.value = Number(balanceRes);
       });
     }
   });

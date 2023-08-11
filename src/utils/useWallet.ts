@@ -1,4 +1,8 @@
-import { MYTOKEN_ADDRESS, MYTOKEN_SYMBOL } from "@/consts/index";
+import {
+  MYTOKEN_ADDRESS,
+  MYTOKEN_SYMBOL,
+  MYTOKEN_DECIMALS,
+} from "@/consts/index";
 import MetaMaskOnboarding from "@metamask/onboarding";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
@@ -22,7 +26,7 @@ export const useMetamask = () => {
             options: {
               address: MYTOKEN_ADDRESS,
               symbol: MYTOKEN_SYMBOL,
-              decimals: 18,
+              decimals: MYTOKEN_DECIMALS,
             },
           },
         })
