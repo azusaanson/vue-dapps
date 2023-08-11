@@ -15,7 +15,11 @@ export const useMyToken = () => {
   const getBalance = async (address: string) => {
     const myTokenContract = getContract();
 
-    const balance = await myTokenContract.balanceOf(address).then();
+    const balance = await myTokenContract.balanceOf(address).catch((err) => {
+      console.error(err);
+      return 0;
+    });
+
     return balance;
   };
 

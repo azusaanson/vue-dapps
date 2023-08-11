@@ -26,14 +26,9 @@ export const useMetamask = () => {
             },
           },
         })
-        .then((success) => {
-          if (success) {
-            console.log("MTK successfully added to wallet!");
-          } else {
-            throw new Error("Something went wrong.");
-          }
-        })
-        .catch(console.error);
+        .catch((err) => {
+          console.error(err);
+        });
     }
   };
 
@@ -42,6 +37,10 @@ export const useMetamask = () => {
       const accounts: string[] = await window.ethereum
         .request({
           method: "eth_requestAccounts",
+        })
+        .catch((err) => {
+          console.error(err);
+          return;
         })
         .then();
 
@@ -57,6 +56,10 @@ export const useMetamask = () => {
       const accounts: string[] = await window.ethereum
         .request({
           method: "eth_accounts",
+        })
+        .catch((err) => {
+          console.error(err);
+          return;
         })
         .then();
 
@@ -74,8 +77,7 @@ export const useMetamask = () => {
       return "";
     }
 
-    const account: string = await requestAccount().then();
-
+    const account: string = await requestAccount();
     return account;
   };
 

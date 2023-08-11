@@ -37,23 +37,44 @@ const shortAddress = computed(() => {
 });
 
 const connectWallet = () => {
-  connectMetamask().then((res) => {
-    if (res !== "") {
-      isWalletConnected.value = true;
-      address.value = res;
-      getBalance(address.value).then((res) => (balance.value = Number(res)));
-    }
-  });
+  connectMetamask()
+    .catch((err) => {
+      console.error(err);
+      return;
+    })
+    .then((res) => {
+      if (res && res !== "") {
+        isWalletConnected.value = true;
+        address.value = res;
+        getBalance(address.value)
+          .catch((err) => {
+            console.error(err);
+            return;
+          })
+          .then((res) => (balance.value = Number(res)));
+      }
+    });
 };
 
 onMounted(() => {
-  getAccount().then((res) => {
-    if (res !== "") {
-      isWalletConnected.value = true;
-      address.value = res;
-    }
-  });
-  getBalance(address.value).then((res) => (balance.value = Number(res)));
+  getAccount()
+    .catch((err) => {
+      console.error(err);
+      return;
+    })
+    .then((res) => {
+      if (res && res !== "") {
+        isWalletConnected.value = true;
+        address.value = res;
+
+        getBalance(address.value)
+          .catch((err) => {
+            console.error(err);
+            return;
+          })
+          .then((res) => (balance.value = Number(res)));
+      }
+    });
 });
 </script>
 
