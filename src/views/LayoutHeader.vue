@@ -14,7 +14,6 @@
           </template>
         </el-dropdown>
       </el-button>
-
       <el-button round type="primary" plain>{{
         computedShortAddress
       }}</el-button>
