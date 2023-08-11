@@ -27,65 +27,45 @@ const balance = ref(0);
 const unit = ref("");
 
 const shortAddress = computed(() => {
-  if (address.value !== "") {
-    return (
-      address.value.substring(0, 4) +
-      "..." +
-      address.value.substring(address.value.length - 4, address.value.length)
-    );
+  if (address.value === "") {
+    return "";
   }
-  return "";
+
+  return (
+    address.value.substring(0, 4) +
+    "..." +
+    address.value.substring(address.value.length - 4, address.value.length)
+  );
 });
 
+const getAccountAndBalance = () => {
+  getAccount().then((res) => {
+    if (res && res !== "") {
+      isWalletConnected.value = true;
+      address.value = res;
+
+      getBalance(address.value).then((balanceRes) => {
+        balance.value = Number(balanceRes.balance);
+        unit.value = balanceRes.unit;
+      });
+    }
+  });
+};
+
 const connectWallet = () => {
-  connectMetamask()
-    .catch((err) => {
-      console.error(err);
-      return;
-    })
-    .then((res) => {
-      if (res && res !== "") {
-        isWalletConnected.value = true;
-        address.value = res;
-        getBalance(address.value)
-          .catch((err) => {
-            console.error(err);
-            return;
-          })
-          .then((res) => {
-            if (res) {
-              balance.value = Number(res.balance);
-              unit.value = res.unit;
-            }
-          });
-      }
-    });
+  const addressRes = connectMetamask();
+  if (addressRes === "") {
+    return;
+  }
+
+  getAccountAndBalance();
 };
 
 onMounted(() => {
-  getAccount()
-    .catch((err) => {
-      console.error(err);
-      return;
-    })
-    .then((res) => {
-      if (res && res !== "") {
-        isWalletConnected.value = true;
-        address.value = res;
-
-        getBalance(address.value)
-          .catch((err) => {
-            console.error(err);
-            return;
-          })
-          .then((res) => {
-            if (res) {
-              balance.value = Number(res.balance);
-              unit.value = res.unit;
-            }
-          });
-      }
-    });
+  getAccountAndBalance();
+  if (window.ethereum) {
+    window.ethereum.on("accountsChanged", getAccountAndBalance);
+  }
 });
 </script>
 

@@ -70,15 +70,23 @@ export const useMetamask = () => {
     return "";
   };
 
-  const connectMetamask = async () => {
+  const connectMetamask = () => {
     if (!isMetamaskInstalled) {
       const onboarding = new MetaMaskOnboarding();
       onboarding.startOnboarding();
       return "";
     }
 
-    const account: string = await requestAccount();
-    return account;
+    requestAccount()
+      .catch((err) => {
+        console.error(err);
+        return;
+      })
+      .then((account) => {
+        return account;
+      });
+
+    return "";
   };
 
   return {

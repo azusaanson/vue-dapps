@@ -28,6 +28,7 @@ export const useMyToken = () => {
     if (Number(balance) < 10 ** (MYTOKEN_DECIMALS - 3)) {
       return { balance: Number(balance), unit: MYTOKEN_SYMBOL_SMALL };
     }
+
     return {
       balance: Number(balance) / 10 ** MYTOKEN_DECIMALS,
       unit: MYTOKEN_SYMBOL,
