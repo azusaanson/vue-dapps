@@ -8,14 +8,16 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item @click="addToken"
-                >add MTK to MetaMask</el-dropdown-item
+                >Add MTK to MetaMask</el-dropdown-item
               >
             </el-dropdown-menu>
           </template>
         </el-dropdown>
       </el-button>
 
-      <el-button round type="primary" plain>{{ shortAddress }}</el-button>
+      <el-button round type="primary" plain>{{
+        computedShortAddress
+      }}</el-button>
     </el-button-group>
     <el-button round type="primary" plain @click="connectWallet" v-else
       >Connect Wallet</el-button
@@ -27,6 +29,7 @@
 <script setup lang="ts">
 import { useMetamask } from "@/utils/useWallet";
 import { useMyToken } from "@/utils/useMyToken";
+import { shortAddress } from "@/utils/useAddress";
 import { ref, onMounted, computed } from "vue";
 
 const { connectMetamask, getAccount, addToken } = useMetamask();
@@ -37,16 +40,8 @@ const address = ref("");
 const balance = ref(0);
 const unit = ref("");
 
-const shortAddress = computed(() => {
-  if (address.value === "") {
-    return "";
-  }
-
-  return (
-    address.value.substring(0, 4) +
-    "..." +
-    address.value.substring(address.value.length - 4, address.value.length)
-  );
+const computedShortAddress = computed(() => {
+  return shortAddress(address.value);
 });
 
 const getAccountAndBalance = () => {

@@ -17,6 +17,14 @@ export const useMyToken = () => {
     return myTokenContract;
   };
 
+  const changeToBigUnit = (smallUnitAmount: number) => {
+    return Number(smallUnitAmount) / 10 ** MYTOKEN_DECIMALS;
+  };
+
+  const changeToSmallUnit = (bigUnitAmount: number) => {
+    return Number(bigUnitAmount) * 10 ** MYTOKEN_DECIMALS;
+  };
+
   const getBalance = async (address: string) => {
     const myTokenContract = getContract();
 
@@ -30,10 +38,10 @@ export const useMyToken = () => {
     }
 
     return {
-      balance: Number(balance) / 10 ** MYTOKEN_DECIMALS,
+      balance: changeToBigUnit(Number(balance)),
       unit: MYTOKEN_SYMBOL,
     };
   };
 
-  return { getBalance };
+  return { changeToBigUnit, changeToSmallUnit, getBalance };
 };
