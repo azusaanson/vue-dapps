@@ -44,11 +44,11 @@ export const useMetamask = () => {
         })
         .catch((err) => {
           console.error(err);
-          return;
+          return [];
         })
         .then();
 
-      if (accounts && accounts.length !== 0) {
+      if (accounts.length !== 0) {
         return accounts[0];
       }
     }
@@ -63,11 +63,11 @@ export const useMetamask = () => {
         })
         .catch((err) => {
           console.error(err);
-          return;
+          return [];
         })
         .then();
 
-      if (accounts && accounts.length !== 0) {
+      if (accounts.length !== 0) {
         return accounts[0];
       }
     }
@@ -84,7 +84,7 @@ export const useMetamask = () => {
     requestAccount()
       .catch((err) => {
         console.error(err);
-        return;
+        return "";
       })
       .then((account) => {
         return account;

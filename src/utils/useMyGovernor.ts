@@ -46,6 +46,7 @@ export const useMyGovernor = () => {
     targetFuncNames: string[],
     description: string
   ) => {
+    const errors: string[] = [];
     const myGovernorContract = getContract();
     const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
 
@@ -58,10 +59,11 @@ export const useMyGovernor = () => {
       .propose(targetAddrs, ethValues, encodedCalldatas, description)
       .catch((err) => {
         console.error(err);
+        errors.push(err);
       });
 
     if (!proposalIdRes) {
-      return { proposal, errors: [] };
+      return { proposal, errors };
     }
 
     myGovernorContract.on(
@@ -89,7 +91,7 @@ export const useMyGovernor = () => {
       }
     );
 
-    return { proposal, errors: [] };
+    return { proposal, errors };
   };
 
   return { propose };
