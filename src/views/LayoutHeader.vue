@@ -1,6 +1,6 @@
 <template>
   <header class="header">
-    <router-link to="/">My Governance</router-link>
+    <router-link to="/"><el-button link>My Governance</el-button></router-link>
     <el-button-group v-if="isWalletConnected">
       <el-button round plain>
         <el-dropdown>

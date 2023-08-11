@@ -1,9 +1,12 @@
 <template>
   <div class="header">
     <span>Proposals</span>
-    <el-button round type="primary">Propose</el-button>
+    <router-link to="/propose"
+      ><el-button round type="primary">Propose</el-button></router-link
+    >
   </div>
 </template>
+
 <style>
 .header {
   width: 60%;
