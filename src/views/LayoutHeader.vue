@@ -2,8 +2,19 @@
   <header class="header">
     <router-link to="/">My Governance</router-link>
     <el-button-group v-if="isWalletConnected">
-      <el-button round plain>{{ balance }} {{ unit }}</el-button>
-      <el-button round plain @click="addToken">add MTK</el-button>
+      <el-button round plain>
+        <el-dropdown>
+          <el-button link> {{ balance }} {{ unit }} </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="addToken"
+                >add MTK to MetaMask</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-button>
+
       <el-button round type="primary" plain>{{ shortAddress }}</el-button>
     </el-button-group>
     <el-button round type="primary" plain @click="connectWallet" v-else
