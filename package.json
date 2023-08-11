@@ -19,7 +19,8 @@
     "pinia": "^2.1.6",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
-    "vuex": "^4.0.0"
+    "vuex": "^4.0.0",
+    "web3": "^4.0.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.4.0",

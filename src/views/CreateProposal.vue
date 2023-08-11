@@ -13,7 +13,7 @@
     </div>
     <div class="frame" v-for="cnt in executionCount" :key="cnt">
       <div>
-        <span>Execution #{{ cnt }}</span>
+        <span>Contract Function Execution #{{ cnt }}</span>
         <el-button
           round
           type="danger"
@@ -29,10 +29,10 @@
           placeholder="Please input"
           clearable
         />
-        <div>Call Data</div>
+        <div>Target Function Name</div>
         <el-input
           v-model="calldatas[cnt - 1]"
-          placeholder="Please input"
+          placeholder="Please input(example: myMethod(uint256,string))"
           clearable
           type="textarea"
           :autosize="{ minRows: 2 }"
