@@ -1,4 +1,4 @@
-import { MYTOKEN_ADDRESS } from "@/consts/address";
+import { MYTOKEN_ADDRESS, MYTOKEN_SYMBOL } from "@/consts/index";
 import MetaMaskOnboarding from "@metamask/onboarding";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
@@ -21,7 +21,7 @@ export const useMetamask = () => {
             type: "ERC20",
             options: {
               address: MYTOKEN_ADDRESS,
-              symbol: "MTK",
+              symbol: MYTOKEN_SYMBOL,
               decimals: 18,
             },
           },

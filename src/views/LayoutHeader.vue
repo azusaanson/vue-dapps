@@ -2,7 +2,7 @@
   <header class="header">
     <router-link to="/">My Governance</router-link>
     <el-button-group v-if="isWalletConnected">
-      <el-button round plain>{{ balance }} MTK</el-button>
+      <el-button round plain>{{ balance }} {{ unit }}</el-button>
       <el-button round plain @click="addToken">add MTK</el-button>
       <el-button round type="primary" plain>{{ shortAddress }}</el-button>
     </el-button-group>
@@ -24,6 +24,7 @@ const { getBalance } = useMyToken();
 const isWalletConnected = ref(false);
 const address = ref("");
 const balance = ref(0);
+const unit = ref("");
 
 const shortAddress = computed(() => {
   if (address.value !== "") {
@@ -51,7 +52,12 @@ const connectWallet = () => {
             console.error(err);
             return;
           })
-          .then((res) => (balance.value = Number(res)));
+          .then((res) => {
+            if (res) {
+              balance.value = Number(res.balance);
+              unit.value = res.unit;
+            }
+          });
       }
     });
 };
@@ -72,7 +78,12 @@ onMounted(() => {
             console.error(err);
             return;
           })
-          .then((res) => (balance.value = Number(res)));
+          .then((res) => {
+            if (res) {
+              balance.value = Number(res.balance);
+              unit.value = res.unit;
+            }
+          });
       }
     });
 });

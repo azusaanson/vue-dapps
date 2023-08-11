@@ -1,4 +1,9 @@
-import { MYTOKEN_ADDRESS } from "@/consts/address";
+import {
+  MYTOKEN_ADDRESS,
+  MYTOKEN_DECIMALS,
+  MYTOKEN_SYMBOL,
+  MYTOKEN_SYMBOL_SMALL,
+} from "@/consts/index";
 import { MyToken__factory } from "@/abis/index";
 import { ethers, Eip1193Provider } from "ethers";
 
@@ -17,10 +22,16 @@ export const useMyToken = () => {
 
     const balance = await myTokenContract.balanceOf(address).catch((err) => {
       console.error(err);
-      return 0;
+      return { balance: 0, unit: "" };
     });
 
-    return balance;
+    if (Number(balance) < 10 ** (MYTOKEN_DECIMALS - 3)) {
+      return { balance: Number(balance), unit: MYTOKEN_SYMBOL_SMALL };
+    }
+    return {
+      balance: Number(balance) / 10 ** MYTOKEN_DECIMALS,
+      unit: MYTOKEN_SYMBOL,
+    };
   };
 
   return { getBalance };
