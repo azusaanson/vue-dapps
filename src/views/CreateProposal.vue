@@ -29,6 +29,7 @@
         <el-button
           round
           type="danger"
+          class="margin-left"
           @click="deleteLastEncodedAction"
           v-if="cnt === actionCount && cnt !== 0"
           >Delete</el-button
