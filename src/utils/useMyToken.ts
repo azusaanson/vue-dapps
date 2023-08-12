@@ -8,8 +8,7 @@ export const useMyToken = () => {
       window.ethereum as Eip1193Provider
     );
 
-    const myTokenContract = MyToken__factory.connect(MYTOKEN_ADDRESS, provider);
-    return myTokenContract;
+    return MyToken__factory.connect(MYTOKEN_ADDRESS, provider);
   };
 
   const getBalance = async (address: string) => {
@@ -23,5 +22,40 @@ export const useMyToken = () => {
     return Number(balance);
   };
 
-  return { getBalance };
+  const myTokenFuncType = {
+    transfer: "transfer",
+    updateGovernor: "updateGovernor",
+    mint: "mint",
+    burn: "burn",
+  };
+
+  const encodeTransfer = (toAddr: string, amount: number) => {
+    return getContract().interface.encodeFunctionData("transfer", [
+      toAddr,
+      amount,
+    ]);
+  };
+
+  const encodeUpdateGovernor = (newGovernorAddr: string) => {
+    return getContract().interface.encodeFunctionData("updateGovernor", [
+      newGovernorAddr,
+    ]);
+  };
+
+  const encodeMint = (amount: number) => {
+    return getContract().interface.encodeFunctionData("mint", [amount]);
+  };
+
+  const encodeBurn = (amount: number) => {
+    return getContract().interface.encodeFunctionData("burn", [amount]);
+  };
+
+  return {
+    getBalance,
+    myTokenFuncType,
+    encodeTransfer,
+    encodeUpdateGovernor,
+    encodeMint,
+    encodeBurn,
+  };
 };

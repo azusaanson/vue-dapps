@@ -1,8 +1,7 @@
-import { MYGOVERNOR_ADDRESS } from "@/consts/index";
+import { MYGOVERNOR_ADDRESS, MYTOKEN_ADDRESS } from "@/consts/index";
 import { MyGovernor__factory } from "@/abis/index";
 import { ethers, Eip1193Provider } from "ethers";
 import { reactive } from "vue";
-import { Web3 } from "web3";
 
 export interface Proposal {
   proposalId: number;
@@ -34,36 +33,24 @@ export const useMyGovernor = () => {
       window.ethereum as Eip1193Provider
     );
 
-    const myGovernorContract = MyGovernor__factory.connect(
-      MYGOVERNOR_ADDRESS,
-      provider
-    );
-    return myGovernorContract;
+    return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, provider);
   };
 
-  const propose = async (
-    targetAddrs: string[],
-    targetFuncNames: string[],
-    description: string
-  ) => {
+  const propose = async (encodedCalldatas: string[], description: string) => {
     const errors: string[] = [];
     const myGovernorContract = getContract();
-    const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
 
-    const ethValues = new Array(targetAddrs.length).fill(0);
-    const encodedCalldatas = targetFuncNames.map((fn) =>
-      web3.eth.abi.encodeFunctionSignature(fn)
-    );
+    const ethValues = new Array(encodedCalldatas.length).fill(0);
 
     const proposalIdRes = await myGovernorContract
-      .propose(targetAddrs, ethValues, encodedCalldatas, description)
+      .propose([MYTOKEN_ADDRESS], ethValues, encodedCalldatas, description)
       .catch((err) => {
         console.error(err);
         errors.push(err);
       });
 
     if (!proposalIdRes) {
-      return { proposal, errors };
+      return errors;
     }
 
     myGovernorContract.on(
@@ -91,8 +78,8 @@ export const useMyGovernor = () => {
       }
     );
 
-    return { proposal, errors };
+    return errors;
   };
 
-  return { propose };
+  return { proposal, propose };
 };
