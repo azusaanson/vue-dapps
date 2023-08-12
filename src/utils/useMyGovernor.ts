@@ -46,7 +46,9 @@ export const useMyGovernor = () => {
   };
 
   const propose = async (encodedCalldatas: string[], description: string) => {
+    let proposalId = 0;
     const errors: string[] = [];
+    const myGovernorContract = getContract();
     const myGovernorContractSigner = await getContractSigner();
 
     const ethValues = new Array(encodedCalldatas.length).fill(0);
@@ -62,11 +64,12 @@ export const useMyGovernor = () => {
       });
 
     if (!proposalIdRes) {
-      return errors;
+      return { proposalId, errors };
     }
+    proposalId = Number(proposalIdRes);
 
-    myGovernorContractSigner.on(
-      myGovernorContractSigner.filters.ProposalCreated(),
+    myGovernorContract.on(
+      myGovernorContract.filters.ProposalCreated(proposalId),
       (
         proposalId,
         proposer,
@@ -90,7 +93,7 @@ export const useMyGovernor = () => {
       }
     );
 
-    return errors;
+    return { proposalId, errors };
   };
 
   return { proposal, propose };

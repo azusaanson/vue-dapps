@@ -104,7 +104,7 @@
     <div class="frame" v-if="isCreateSucceed">
       <div class="create-succeed">Propose Succeed!</div>
       <div>Proposal Detail</div>
-      <div>proposal id: {{ proposal.proposalId }}</div>
+      <div>proposal id: {{ proposalId }}</div>
       <div>description: {{ proposal.description }}</div>
       <div>proposer: {{ proposal.proposer }}</div>
       <div>vote start at: {{ proposal.voteStart }}</div>
@@ -290,11 +290,11 @@ const initCreateProposal = () => {
 };
 const createProposal = () => {
   initCreateProposal();
-  propose(encodedTargetFuncs.value, title.value).then((errs) => {
-    if (errs.length > 0) {
-      createErrors.value = errs;
+  propose(encodedTargetFuncs.value, title.value).then((res) => {
+    if (res.errors.length > 0) {
+      createErrors.value = res.errors;
     } else {
-      proposalId.value = proposal.proposalId;
+      proposalId.value = res.proposalId;
     }
   });
   isAfterCreate.value = true;
