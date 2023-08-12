@@ -92,7 +92,8 @@
       <el-button
         round
         type="primary"
-        :disabled="isProposeDisabled"
+        v-loading="isCreating"
+        :disabled="isProposeDisabled || isCreating"
         @click="createProposal"
         >Propose</el-button
       >
@@ -274,18 +275,26 @@ const addActionInput = () => {
 
 const createErrors = ref<string[]>([]);
 const isAfterCreate = ref(false);
+const proposalId = ref(0);
 
-const isCreateSucceed = computed(
-  () => isAfterCreate.value && createErrors.value.length == 0
-);
-const isCreateFailed = computed(
-  () => isAfterCreate.value && createErrors.value.length > 0
+const isCreateSucceed = computed(() => proposalId.value > 0);
+const isCreateFailed = computed(() => createErrors.value.length > 0);
+const isCreating = computed(
+  () => isAfterCreate.value && !isCreateSucceed.value && !isCreateFailed.value
 );
 
+const initCreateProposal = () => {
+  createErrors.value = [];
+  isAfterCreate.value = false;
+  proposalId.value = 0;
+};
 const createProposal = () => {
+  initCreateProposal();
   propose(encodedTargetFuncs.value, title.value).then((errs) => {
     if (errs.length > 0) {
       createErrors.value = errs;
+    } else {
+      proposalId.value = proposal.proposalId;
     }
   });
   isAfterCreate.value = true;
