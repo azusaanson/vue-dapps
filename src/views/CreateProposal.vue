@@ -180,7 +180,12 @@ const haveUintParam = computed(
     selectedFunc.value === myTokenFuncType.burn
 );
 const isProposeDisabled = computed(() => {
-  if (isTitleInvalid() || isOverviewInvalid() || isAddingAction.value) {
+  if (
+    isTitleInvalid() ||
+    isOverviewInvalid() ||
+    isAddingAction.value ||
+    encodedTargetFuncs.value.length <= 0
+  ) {
     return true;
   }
 

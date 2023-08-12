@@ -36,14 +36,26 @@ export const useMyGovernor = () => {
     return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, provider);
   };
 
+  const getContractSigner = async () => {
+    const provider = new ethers.BrowserProvider(
+      window.ethereum as Eip1193Provider
+    );
+    const signer = await provider.getSigner();
+
+    return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, signer);
+  };
+
   const propose = async (encodedCalldatas: string[], description: string) => {
     const errors: string[] = [];
-    const myGovernorContract = getContract();
+    const myGovernorContractSigner = await getContractSigner();
 
     const ethValues = new Array(encodedCalldatas.length).fill(0);
+    const myTokenAddrs = new Array(encodedCalldatas.length).fill(
+      MYTOKEN_ADDRESS
+    );
 
-    const proposalIdRes = await myGovernorContract
-      .propose([MYTOKEN_ADDRESS], ethValues, encodedCalldatas, description)
+    const proposalIdRes = await myGovernorContractSigner
+      .propose(myTokenAddrs, ethValues, encodedCalldatas, description)
       .catch((err) => {
         console.error(err);
         errors.push(err);
@@ -53,8 +65,8 @@ export const useMyGovernor = () => {
       return errors;
     }
 
-    myGovernorContract.on(
-      myGovernorContract.filters.ProposalCreated(),
+    myGovernorContractSigner.on(
+      myGovernorContractSigner.filters.ProposalCreated(),
       (
         proposalId,
         proposer,
