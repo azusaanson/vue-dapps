@@ -81,7 +81,7 @@ export const useMetamask = () => {
       return "";
     }
 
-    requestAccount()
+    const account = requestAccount()
       .catch((err) => {
         console.error(err);
         return "";
@@ -90,7 +90,7 @@ export const useMetamask = () => {
         return account;
       });
 
-    return "";
+    return account;
   };
 
   return {

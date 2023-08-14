@@ -101,16 +101,16 @@
         ><el-button round type="danger">Cancel</el-button></router-link
       >
     </div>
-    <div class="frame" v-if="isCreateSucceed">
-      <div class="create-succeed">Propose Succeed!</div>
+    <div class="frame create-succeed" v-if="isCreateSucceed">
+      <div>Propose Succeed!</div>
       <div>Proposal Detail</div>
-      <div>proposal id: {{ proposalId }}</div>
-      <div>description: {{ proposal.description }}</div>
-      <div>proposer: {{ proposal.proposer }}</div>
-      <div>vote start at: {{ proposal.voteStart }}</div>
-      <div>vote end at: {{ proposal.voteEnd }}</div>
+      <div>proposal id: {{ proposal.proposalId }}</div>
+      <div>title: {{ proposal.description }}</div>
+      <div>proposer address: {{ proposal.proposer }}</div>
+      <div>vote start at: block #{{ proposal.voteStart }}</div>
+      <div>vote end at: block #{{ proposal.voteEnd }}</div>
       <div>target contract addresses: {{ proposal.targets }}</div>
-      <div>target functions: {{ proposal.calldatas }}</div>
+      <div>target encoded functions: {{ proposal.calldatas }}</div>
     </div>
     <div class="frame create-failed" v-if="isCreateFailed">
       Propose Failed! Errors: {{ createErrors }}
@@ -190,12 +190,8 @@ const isProposeDisabled = computed(() => {
     return true;
   }
 
-  for (
-    let proposalIndex = 0;
-    proposalIndex < actionCount.value;
-    proposalIndex++
-  ) {
-    if (isEncodedFuncInvalid(proposalIndex)) {
+  for (let i = 0; i < actionCount.value; i++) {
+    if (isEncodedFuncInvalid(i)) {
       return true;
     }
   }
@@ -231,53 +227,54 @@ const encodeActionAndPush = () => {
       targetFuncDescs.value.push(
         "transfer " + paramUint.value + " MTK to " + paramAddress.value
       );
-      actionCount.value += 1;
-      deleteLastActionInput();
+      finishActionPush();
       return;
     case myTokenFuncType.mint:
       encodedFunc = encodeMint(paramUint.value);
       encodedTargetFuncs.value.push(encodedFunc);
       targetFuncDescs.value.push("mint " + paramUint.value + " MTK");
-      actionCount.value += 1;
-      deleteLastActionInput();
+      finishActionPush();
       return;
     case myTokenFuncType.burn:
       encodedFunc = encodeBurn(paramUint.value);
       encodedTargetFuncs.value.push(encodedFunc);
       targetFuncDescs.value.push("burn " + paramUint.value + " MTK");
-      actionCount.value += 1;
-      deleteLastActionInput();
+      finishActionPush();
       return;
     case myTokenFuncType.updateGovernor:
       encodedFunc = encodeUpdateGovernor(paramAddress.value);
       encodedTargetFuncs.value.push(encodedFunc);
       targetFuncDescs.value.push("updateGovernor to" + paramAddress.value);
-      actionCount.value += 1;
-      deleteLastActionInput();
+      finishActionPush();
       return;
     default:
       return;
   }
+};
+const finishActionPush = () => {
+  actionCount.value += 1;
+  deleteLastActionInput();
 };
 const deleteLastEncodedAction = () => {
   encodedTargetFuncs.value.pop();
   targetFuncDescs.value.pop();
   actionCount.value -= 1;
 };
-const deleteLastActionInput = () => {
-  isAddingAction.value = false;
-  initActionInput();
-};
 const addActionInput = () => {
   isAddingAction.value = true;
+  initActionInput();
+};
+const deleteLastActionInput = () => {
+  isAddingAction.value = false;
   initActionInput();
 };
 
 const createErrors = ref<string[]>([]);
 const isAfterCreate = ref(false);
-const proposalId = ref(0);
 
-const isCreateSucceed = computed(() => proposalId.value > 0);
+const isCreateSucceed = computed(
+  () => proposal.proposalId != "0" && proposal.proposalId != ""
+);
 const isCreateFailed = computed(() => createErrors.value.length > 0);
 const isCreating = computed(
   () => isAfterCreate.value && !isCreateSucceed.value && !isCreateFailed.value
@@ -286,15 +283,13 @@ const isCreating = computed(
 const initCreateProposal = () => {
   createErrors.value = [];
   isAfterCreate.value = false;
-  proposalId.value = 0;
+  proposal.proposalId = "0";
 };
 const createProposal = () => {
   initCreateProposal();
-  propose(encodedTargetFuncs.value, title.value).then((res) => {
-    if (res.errors.length > 0) {
-      createErrors.value = res.errors;
-    } else {
-      proposalId.value = res.proposalId;
+  propose(encodedTargetFuncs.value, title.value).then((resErrs) => {
+    if (resErrs.length > 0) {
+      createErrors.value = resErrs;
     }
   });
   isAfterCreate.value = true;
