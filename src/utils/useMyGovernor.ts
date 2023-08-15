@@ -3,30 +3,116 @@ import { MyGovernor__factory } from "@/abis/index";
 import { ethers, Eip1193Provider, EventLog } from "ethers";
 import { reactive } from "vue";
 
-export interface Proposal {
+export interface ProposeResProposal {
   proposalId: string;
   proposer: string;
-  targets: string[];
-  values: number[];
+  targetContractAddrs: string[];
+  ethValues: number[];
   signatures: string[];
   calldatas: string[];
   voteStart: number;
   voteEnd: number;
-  description: string;
+  title: string;
 }
 
 export const useMyGovernor = () => {
-  const proposal = reactive<Proposal>({
+  const proposal = reactive<ProposeResProposal>({
     proposalId: "0",
     proposer: "",
-    targets: [],
-    values: [],
+    targetContractAddrs: [],
+    ethValues: [],
     signatures: [],
     calldatas: [],
     voteStart: 0,
     voteEnd: 0,
-    description: "",
+    title: "",
   });
+
+  const getContract = () => {
+    const provider = new ethers.BrowserProvider(
+      window.ethereum as Eip1193Provider
+    );
+
+    return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, provider);
+  };
+
+  const stateString = {
+    pending: "Pending",
+    active: "Active",
+    canceled: "Canceled",
+    defeated: "Defeated",
+    succeeded: "Succeeded",
+    queued: "Queued",
+    expired: "Expired",
+    executed: "Executed",
+  };
+
+  const toStateString = (stateInt: number) => {
+    switch (stateInt) {
+      case 0:
+        return stateString.pending;
+      case 1:
+        return stateString.active;
+      case 2:
+        return stateString.canceled;
+      case 3:
+        return stateString.defeated;
+      case 4:
+        return stateString.succeeded;
+      case 5:
+        return stateString.queued;
+      case 6:
+        return stateString.expired;
+      case 7:
+        return stateString.executed;
+      default:
+        return "";
+    }
+  };
+
+  const getProposalDetail = async (proposalId: string) => {
+    const myGovernorContract = getContract();
+
+    const { state, snapshot, deadline, proposer } = await myGovernorContract
+      .proposalDetail(proposalId)
+      .catch((err) => {
+        console.error(err);
+        return {
+          state: BigInt(10), // assign a out of range index to perform "zero value" because enum start from 0
+          snapshot: BigInt(0),
+          deadline: BigInt(0),
+          proposer: "",
+        };
+      });
+
+    return {
+      state: toStateString(Number(state)),
+      voteStart: Number(snapshot),
+      voteEnd: Number(deadline),
+      proposer: proposer,
+    };
+  };
+
+  const getProposalVotes = async (proposalId: string) => {
+    const myGovernorContract = getContract();
+
+    const { againstVotes, forVotes, abstainVotes } = await myGovernorContract
+      .proposalVotes(proposalId)
+      .catch((err) => {
+        console.error(err);
+        return {
+          againstVotes: BigInt(0),
+          forVotes: BigInt(0),
+          abstainVotes: BigInt(0),
+        };
+      });
+
+    return {
+      against: Number(againstVotes),
+      for: Number(forVotes),
+      abstain: Number(abstainVotes),
+    };
+  };
 
   const getContractSigner = async () => {
     const provider = new ethers.BrowserProvider(
@@ -37,7 +123,7 @@ export const useMyGovernor = () => {
     return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, signer);
   };
 
-  const propose = async (encodedCalldatas: string[], description: string) => {
+  const propose = async (encodedCalldatas: string[], title: string) => {
     const errors: string[] = [];
     const myGovernorContractSigner = await getContractSigner();
 
@@ -47,7 +133,7 @@ export const useMyGovernor = () => {
     );
 
     const txResponse = await myGovernorContractSigner
-      .propose(myTokenAddrs, ethValues, encodedCalldatas, description)
+      .propose(myTokenAddrs, ethValues, encodedCalldatas, title)
       .catch((err) => {
         console.error(err);
         errors.push(err);
@@ -72,17 +158,18 @@ export const useMyGovernor = () => {
         } = txReceipt.logs[0].args;
         proposal.proposalId = String(proposalId);
         proposal.proposer = proposer;
-        proposal.targets = targets;
+        proposal.targetContractAddrs = targets;
+        proposal.ethValues = ethValues; // 0 array because fixed req
         proposal.signatures = signatures;
         proposal.calldatas = calldatas;
         proposal.voteStart = Number(voteStart);
         proposal.voteEnd = Number(voteEnd);
-        proposal.description = description;
+        proposal.title = description;
       }
     }
 
     return errors;
   };
 
-  return { proposal, propose };
+  return { proposal, getProposalDetail, getProposalVotes, propose };
 };

@@ -105,11 +105,11 @@
       <div>Propose Succeed!</div>
       <div>Proposal Detail</div>
       <div>proposal id: {{ proposal.proposalId }}</div>
-      <div>title: {{ proposal.description }}</div>
+      <div>title: {{ proposal.title }}</div>
       <div>proposer address: {{ proposal.proposer }}</div>
       <div>vote start at: block #{{ proposal.voteStart }}</div>
       <div>vote end at: block #{{ proposal.voteEnd }}</div>
-      <div>target contract addresses: {{ proposal.targets }}</div>
+      <div>target contract addresses: {{ proposal.targetContractAddrs }}</div>
       <div>target encoded functions: {{ proposal.calldatas }}</div>
     </div>
     <div class="frame create-failed" v-if="isCreateFailed">
