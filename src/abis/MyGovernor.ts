@@ -48,6 +48,7 @@ export interface MyGovernorInterface extends Interface {
       | "onERC1155Received"
       | "onERC721Received"
       | "proposalDeadline"
+      | "proposalDetail"
       | "proposalProposer"
       | "proposalSnapshot"
       | "proposalThreshold"
@@ -175,6 +176,10 @@ export interface MyGovernorInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "proposalDetail",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "proposalProposer",
     values: [BigNumberish]
   ): string;
@@ -296,6 +301,10 @@ export interface MyGovernorInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "proposalDeadline",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "proposalDetail",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -709,6 +718,19 @@ export interface MyGovernor extends BaseContract {
     "view"
   >;
 
+  proposalDetail: TypedContractMethod<
+    [proposalId: BigNumberish],
+    [
+      [bigint, bigint, bigint, string] & {
+        state: bigint;
+        snapshot: bigint;
+        deadline: bigint;
+        proposer: string;
+      }
+    ],
+    "view"
+  >;
+
   proposalProposer: TypedContractMethod<
     [proposalId: BigNumberish],
     [string],
@@ -972,6 +994,20 @@ export interface MyGovernor extends BaseContract {
   getFunction(
     nameOrSignature: "proposalDeadline"
   ): TypedContractMethod<[proposalId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "proposalDetail"
+  ): TypedContractMethod<
+    [proposalId: BigNumberish],
+    [
+      [bigint, bigint, bigint, string] & {
+        state: bigint;
+        snapshot: bigint;
+        deadline: bigint;
+        proposer: string;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "proposalProposer"
   ): TypedContractMethod<[proposalId: BigNumberish], [string], "view">;

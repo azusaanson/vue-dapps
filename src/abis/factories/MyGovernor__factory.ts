@@ -844,6 +844,40 @@ const _abi = [
         type: "uint256",
       },
     ],
+    name: "proposalDetail",
+    outputs: [
+      {
+        internalType: "enum IGovernor.ProposalState",
+        name: "state",
+        type: "uint8",
+      },
+      {
+        internalType: "uint256",
+        name: "snapshot",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "deadline",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "proposer",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "proposalId",
+        type: "uint256",
+      },
+    ],
     name: "proposalProposer",
     outputs: [
       {
