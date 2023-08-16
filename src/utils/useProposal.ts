@@ -28,9 +28,6 @@ export interface ListProposal {
   title: string;
   state: string;
   voteEnd: number;
-  againstVotes: number;
-  forVotes: number;
-  abstainVotes: number;
 }
 
 export interface CreateProposalRes {
