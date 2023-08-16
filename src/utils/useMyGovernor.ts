@@ -16,18 +16,6 @@ export interface ProposeRes {
 }
 
 export const useMyGovernor = () => {
-  const proposeRes = reactive<ProposeRes>({
-    proposalId: "0",
-    proposer: "",
-    targetContractAddrs: [],
-    ethValues: [],
-    signatures: [],
-    calldatas: [],
-    voteStart: 0,
-    voteEnd: 0,
-    title: "",
-  });
-
   const contract = () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
@@ -123,6 +111,18 @@ export const useMyGovernor = () => {
     return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, signer);
   };
 
+  const proposeRes = reactive<ProposeRes>({
+    proposalId: "0",
+    proposer: "",
+    targetContractAddrs: [],
+    ethValues: [],
+    signatures: [],
+    calldatas: [],
+    voteStart: 0,
+    voteEnd: 0,
+    title: "",
+  });
+
   const propose = async (encodedCalldatas: string[], title: string) => {
     const errors: string[] = [];
     const myGovernorContractSigner = await contractSigner();
@@ -175,9 +175,9 @@ export const useMyGovernor = () => {
   };
 
   return {
-    proposeRes,
     getProposalDetail,
     getProposalVotes,
+    proposeRes,
     propose,
   };
 };

@@ -90,7 +90,7 @@ export const useProposal = () => {
       ipfs_address: "ipfs address",
     };
 
-    const { proposalRecord, createProposalRecord } = await useDB();
+    const { proposalRecordRes, createProposalRecord } = await useDB();
 
     const dbRes = await createProposalRecord(newProposalRecord);
 
@@ -101,10 +101,10 @@ export const useProposal = () => {
 
     Object.assign(createProposalRes, {
       proposalId: proposeRes.proposalId,
-      title: proposalRecord.title,
+      title: proposalRecordRes.title,
       voteStart: proposeRes.voteStart,
       voteEnd: proposeRes.voteEnd,
-      ipfs_address: proposalRecord.ipfs_address,
+      ipfs_address: proposalRecordRes.ipfs_address,
     });
 
     return errors;

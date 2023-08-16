@@ -11,16 +11,7 @@ export interface ProposalRecord {
 }
 
 export const useDB = async () => {
-  const proposalRecord = reactive<ProposalRecord>({
-    id: 0,
-    proposal_id: 0,
-    title: "",
-    overview: "",
-    ipfs_address: "",
-  });
-
   sqlite3.verbose();
-
   const db = await open({
     filename: "./db/mygovernance.db",
     driver: sqlite3.Database,
@@ -41,6 +32,14 @@ export const useDB = async () => {
     return results;
   };
 
+  const proposalRecordRes = reactive<ProposalRecord>({
+    id: 0,
+    proposal_id: 0,
+    title: "",
+    overview: "",
+    ipfs_address: "",
+  });
+
   const setProposalRecord = async (id: number) => {
     const errors: string[] = [];
     const result = await db
@@ -55,7 +54,7 @@ export const useDB = async () => {
       return errors;
     }
 
-    Object.assign(proposalRecord, {
+    Object.assign(proposalRecordRes, {
       id: result.id,
       proposal_id: result.proposal_id,
       title: result.title,
@@ -83,7 +82,7 @@ export const useDB = async () => {
       return errors;
     }
 
-    Object.assign(proposalRecord, {
+    Object.assign(proposalRecordRes, {
       id: result.id,
       proposal_id: result.proposal_id,
       title: result.title,
@@ -128,8 +127,8 @@ export const useDB = async () => {
   };
 
   return {
-    proposalRecord,
     getProposalList,
+    proposalRecordRes,
     setProposalRecord,
     setProposalRecordByIpfsAddr,
     createProposalRecord,
