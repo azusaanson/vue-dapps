@@ -4,6 +4,7 @@
 
 ```
 npm install
+npm run migrateup
 ```
 
 ### Compiles and hot-reloads for development
