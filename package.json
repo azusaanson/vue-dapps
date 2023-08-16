@@ -6,7 +6,9 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "typechain": "typechain --target ethers-v6 --out-dir ./src/abis './src/abis/*.abi'"
+    "typechain": "typechain --target ethers-v6 --out-dir ./src/abis './src/abis/*.abi'",
+    "migrateup": "node ./db/migrateUp.js",
+    "migratedown": "node ./db/migrateDown.js"
   },
   "dependencies": {
     "@gtm-support/vue-gtm": "^2.1.0",
@@ -17,6 +19,8 @@
     "ethers": "^6.7.0",
     "metamask": "^0.0.1-security",
     "pinia": "^2.1.6",
+    "sqlite": "^5.0.1",
+    "sqlite3": "^5.1.6",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0",
