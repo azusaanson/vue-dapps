@@ -3,7 +3,7 @@ import { MyToken__factory } from "@/abis/index";
 import { ethers, Eip1193Provider } from "ethers";
 
 export const useMyToken = () => {
-  const getContract = () => {
+  const contract = () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
     );
@@ -12,7 +12,7 @@ export const useMyToken = () => {
   };
 
   const getBalance = async (address: string) => {
-    const myTokenContract = getContract();
+    const myTokenContract = contract();
 
     const balance = await myTokenContract.balanceOf(address).catch((err) => {
       console.error(err);
@@ -30,24 +30,24 @@ export const useMyToken = () => {
   };
 
   const encodeTransfer = (toAddr: string, amount: number) => {
-    return getContract().interface.encodeFunctionData("transfer", [
+    return contract().interface.encodeFunctionData("transfer", [
       toAddr,
       amount,
     ]);
   };
 
   const encodeUpdateGovernor = (newGovernorAddr: string) => {
-    return getContract().interface.encodeFunctionData("updateGovernor", [
+    return contract().interface.encodeFunctionData("updateGovernor", [
       newGovernorAddr,
     ]);
   };
 
   const encodeMint = (amount: number) => {
-    return getContract().interface.encodeFunctionData("mint", [amount]);
+    return contract().interface.encodeFunctionData("mint", [amount]);
   };
 
   const encodeBurn = (amount: number) => {
-    return getContract().interface.encodeFunctionData("burn", [amount]);
+    return contract().interface.encodeFunctionData("burn", [amount]);
   };
 
   return {
