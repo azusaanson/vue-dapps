@@ -61,7 +61,7 @@ export const useProposal = () => {
   };
 
   const createProposalRes = reactive<CreateProposalRes>({
-    proposalId: "",
+    proposalId: "0",
     title: "",
     voteStart: 0,
     voteEnd: 0,
@@ -103,7 +103,7 @@ export const useProposal = () => {
     }
 
     Object.assign(createProposalRes, {
-      proposalId: proposalRecord.proposal_id,
+      proposalId: proposeRes.proposalId,
       title: proposalRecord.title,
       voteStart: proposeRes.voteStart,
       voteEnd: proposeRes.voteEnd,
