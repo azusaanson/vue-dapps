@@ -70,18 +70,17 @@ export const useProposal = () => {
     title: string,
     overview: string
   ) => {
-    const errors: string[] = [];
-
     // create proposal in contract
     const { proposeRes, propose } = useMyGovernor();
 
     const proposeErrs = await propose(encodedCalldatas, title);
-
     if (proposeErrs.length > 0) {
       return proposeErrs;
     }
 
     // create record in db
+    const { proposalRecordRes, createProposalRecord } = useDB();
+
     const newProposalRecord: ProposalRecord = {
       id: 0,
       proposal_id: Number(proposeRes.proposalId),
@@ -90,13 +89,9 @@ export const useProposal = () => {
       ipfs_address: "ipfs address",
     };
 
-    const { proposalRecordRes, createProposalRecord } = await useDB();
-
-    const dbRes = await createProposalRecord(newProposalRecord);
-
-    if (!dbRes) {
-      errors.push("db error: cannot create proposal data in db");
-      return errors;
+    const dbErrs = createProposalRecord(newProposalRecord);
+    if (dbErrs) {
+      return dbErrs;
     }
 
     Object.assign(createProposalRes, {
@@ -107,7 +102,7 @@ export const useProposal = () => {
       ipfs_address: proposalRecordRes.ipfs_address,
     });
 
-    return errors;
+    return [];
   };
 
   return {

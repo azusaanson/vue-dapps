@@ -1,5 +1,4 @@
 import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import { reactive } from "vue";
 
 export interface ProposalRecord {
@@ -10,26 +9,32 @@ export interface ProposalRecord {
   ipfs_address: string;
 }
 
-export const useDB = async () => {
+export const useDB = () => {
   sqlite3.verbose();
-  const db = await open({
-    filename: "./db/mygovernance.db",
-    driver: sqlite3.Database,
-  });
-
-  const getProposalList = async () => {
-    const results = await db
-      .all<ProposalRecord[]>("SELECT * FROM proposal")
-      .catch((err) => {
+  const db = new sqlite3.Database(
+    "./db/mygovernance.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
         console.error(err);
-        return undefined;
-      });
-
-    if (!results) {
-      return [];
+        return;
+      }
     }
+  );
 
-    return results;
+  const getProposalList = () => {
+    const errors: string[] = [];
+    let res: ProposalRecord[] = [];
+    db.all<ProposalRecord>("SELECT * FROM proposal", [], (err, rows) => {
+      if (err) {
+        console.error(err);
+        errors.push(err.message);
+        return;
+      }
+      res = rows;
+    });
+
+    return { res, errors };
   };
 
   const proposalRecordRes = reactive<ProposalRecord>({
@@ -40,87 +45,78 @@ export const useDB = async () => {
     ipfs_address: "",
   });
 
-  const setProposalRecord = async (id: number) => {
+  const setProposalRecord = (id: number) => {
     const errors: string[] = [];
-    const result = await db
-      .get<ProposalRecord>("SELECT * FROM proposal WHERE id = ?", id)
-      .catch((err) => {
-        console.error(err);
-        errors.push(err);
-      });
-
-    if (!result) {
-      errors.push("db error: cannot setProposalRecord");
-      return errors;
-    }
-
-    Object.assign(proposalRecordRes, {
-      id: result.id,
-      proposal_id: result.proposal_id,
-      title: result.title,
-      overview: result.overview,
-      ipfs_address: result.ipfs_address,
-    });
-
-    return errors;
-  };
-
-  const setProposalRecordByIpfsAddr = async (ipfsAddr: string) => {
-    const errors: string[] = [];
-    const result = await db
-      .get<ProposalRecord>(
-        "SELECT * FROM proposal WHERE ipfs_address = ?",
-        ipfsAddr
-      )
-      .catch((err) => {
-        console.error(err);
-        errors.push(err);
-      });
-
-    if (!result) {
-      errors.push("db error: cannot setProposalRecordByIpfsAddr");
-      return errors;
-    }
-
-    Object.assign(proposalRecordRes, {
-      id: result.id,
-      proposal_id: result.proposal_id,
-      title: result.title,
-      overview: result.overview,
-      ipfs_address: result.ipfs_address,
-    });
-
-    return errors;
-  };
-
-  const createProposalRecord = async (proposal: ProposalRecord) => {
-    const errors: string[] = [];
-    const result = await db
-      .run(
-        "INSERT INTO proposal(proposal_id, title, overview, ipfs_address) VALUES (:proposal_id, :title, :overview, :ipfs_address)",
-        {
-          ":proposal_id": proposal.proposal_id,
-          ":title": proposal.title,
-          ":overview": proposal.overview,
-          ":ipfs_address": proposal.ipfs_address,
+    db.get<ProposalRecord>(
+      "SELECT * FROM proposal WHERE id = ?",
+      id,
+      (err, row) => {
+        if (err) {
+          console.error(err);
+          errors.push(err.message);
+          return;
         }
-      )
-      .catch((err) => {
-        console.error(err);
-        errors.push(err);
-      });
 
-    if (!result) {
-      errors.push("db error: cannot createProposalRecord");
-      return errors;
-    }
-
-    const setProposalErr = await setProposalRecordByIpfsAddr(
-      proposal.ipfs_address
+        Object.assign(proposalRecordRes, {
+          id: row.id,
+          proposal_id: row.proposal_id,
+          title: row.title,
+          overview: row.overview,
+          ipfs_address: row.ipfs_address,
+        });
+      }
     );
 
-    if (setProposalErr.length > 0) {
-      return setProposalErr;
+    return errors;
+  };
+
+  const setProposalRecordByIpfsAddr = (ipfsAddr: string) => {
+    const errors: string[] = [];
+    db.get<ProposalRecord>(
+      "SELECT * FROM proposal WHERE ipfs_address = ?",
+      ipfsAddr,
+      (err, row) => {
+        if (err) {
+          console.error(err);
+          errors.push(err.message);
+          return;
+        }
+
+        Object.assign(proposalRecordRes, {
+          id: row.id,
+          proposal_id: row.proposal_id,
+          title: row.title,
+          overview: row.overview,
+          ipfs_address: row.ipfs_address,
+        });
+      }
+    );
+
+    return errors;
+  };
+
+  const createProposalRecord = (proposal: ProposalRecord) => {
+    const errors: string[] = [];
+    db.run(
+      "INSERT INTO proposal(proposal_id, title, overview, ipfs_address) VALUES (:proposal_id, :title, :overview, :ipfs_address)",
+      {
+        ":proposal_id": proposal.proposal_id,
+        ":title": proposal.title,
+        ":overview": proposal.overview,
+        ":ipfs_address": proposal.ipfs_address,
+      },
+      (err) => {
+        if (err) {
+          console.error(err);
+          errors.push(err.message);
+          return;
+        }
+      }
+    );
+
+    const setProposalErrs = setProposalRecordByIpfsAddr(proposal.ipfs_address);
+    if (setProposalErrs.length > 0) {
+      return setProposalErrs;
     }
 
     return errors;
