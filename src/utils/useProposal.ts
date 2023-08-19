@@ -1,7 +1,7 @@
 import { Web3 } from "web3";
 import { keccak256, toUtf8Bytes } from "ethers";
 import { useMyGovernor } from "@/utils/useMyGovernor";
-import { useDB, ProposalRecord } from "@/utils/useDB";
+import { useDB } from "@/utils/useDB";
 import { reactive } from "vue";
 export interface Proposal {
   id: number;
@@ -33,9 +33,11 @@ export interface ListProposal {
 export interface CreateProposalRes {
   proposalId: string;
   title: string;
+  overview: string;
   voteStart: number;
   voteEnd: number;
-  ipfs_address: string;
+  ipfsAddress: string;
+  firebaseID: string;
 }
 
 export const useProposal = () => {
@@ -60,9 +62,11 @@ export const useProposal = () => {
   const createProposalRes = reactive<CreateProposalRes>({
     proposalId: "0",
     title: "",
+    overview: "",
     voteStart: 0,
     voteEnd: 0,
-    ipfs_address: "",
+    ipfsAddress: "",
+    firebaseID: "",
   });
 
   const createProposal = async (
@@ -79,27 +83,23 @@ export const useProposal = () => {
     }
 
     // create record in db
-    const { proposalRecordRes, createProposalRecord } = useDB();
+    const { createProposalRecord } = useDB();
 
-    const newProposalRecord: ProposalRecord = {
-      id: 0,
-      proposal_id: Number(proposeRes.proposalId),
-      title: proposeRes.title,
-      overview: overview,
-      ipfs_address: "ipfs address",
-    };
+    const newProposalRecord = "ipfs address" + proposeRes.proposalId;
 
-    const dbErrs = createProposalRecord(newProposalRecord);
-    if (dbErrs) {
-      return dbErrs;
+    const dbRes = await createProposalRecord(newProposalRecord);
+    if (dbRes.errors.length > 0) {
+      return dbRes.errors;
     }
 
     Object.assign(createProposalRes, {
       proposalId: proposeRes.proposalId,
-      title: proposalRecordRes.title,
+      title: title,
+      overview: overview,
       voteStart: proposeRes.voteStart,
       voteEnd: proposeRes.voteEnd,
-      ipfs_address: proposalRecordRes.ipfs_address,
+      ipfsAddress: newProposalRecord,
+      firebaseID: dbRes.id,
     });
 
     return [];

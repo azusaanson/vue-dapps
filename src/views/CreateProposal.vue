@@ -106,9 +106,11 @@
       <div>Proposal Detail</div>
       <div>proposal id: {{ createProposalRes.proposalId }}</div>
       <div>title: {{ createProposalRes.title }}</div>
+      <div>overview: {{ createProposalRes.overview }}</div>
       <div>vote start at: block #{{ createProposalRes.voteStart }}</div>
       <div>vote end at: block #{{ createProposalRes.voteEnd }}</div>
-      <div>ipfs address: {{ createProposalRes.ipfs_address }}</div>
+      <div>ipfs address: {{ createProposalRes.ipfsAddress }}</div>
+      <div>firebase id: {{ createProposalRes.firebaseID }}</div>
     </div>
     <div class="frame create-failed" v-if="isCreateFailed">
       Propose Failed! Errors: {{ createErrors }}
