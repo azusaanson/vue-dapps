@@ -6,9 +6,9 @@ export const useDB = () => {
   const app = initializeApp(FIREBASE_CONFIG);
   const db = getFirestore(app);
 
-  const getProposalList = async () => {
+  const getProposalIpfsAddrList = async () => {
     const errors: string[] = [];
-    const res: string[] = [];
+    const ipfsAddrs: string[] = [];
 
     const querySnapshot = await getDocs(collection(db, "proposal")).catch(
       (err) => {
@@ -21,14 +21,14 @@ export const useDB = () => {
     );
 
     if (!querySnapshot) {
-      return { res, errors };
+      return { ipfsAddrs, errors };
     }
 
     querySnapshot.forEach((doc) => {
-      res.push(doc.data().ipfs_address);
+      ipfsAddrs.push(doc.data().ipfs_address);
     });
 
-    return { res, errors };
+    return { ipfsAddrs, errors };
   };
 
   const createProposalRecord = async (ipfsAddr: string) => {
@@ -52,7 +52,7 @@ export const useDB = () => {
   };
 
   return {
-    getProposalList,
+    getProposalIpfsAddrList,
     createProposalRecord,
   };
 };

@@ -24,11 +24,11 @@ export interface Proposal {
 }
 
 export interface ListProposal {
-  id: number;
   proposalId: string;
   title: string;
   state: string;
   voteEnd: number;
+  createdAt: number;
 }
 
 export interface CreateProposalRes {
@@ -57,6 +57,48 @@ export const useProposal = () => {
       ["address[]", "uint256[]", "bytes[]", "bytes32"],
       [targetContractAddrs, ethValues, calldatas, getDescriptionHash(title)]
     );
+  };
+
+  const getProposalList = async () => {
+    const proposalListRes: ListProposal[] = [];
+    let errors: string[] = [];
+
+    const { getProposalIpfsAddrList } = useDB();
+    const { proposalIpfsRecord, setProposalIpfsRecord } = await useIpfs();
+    const { getProposalDetail } = useMyGovernor();
+
+    // from firebase
+    const dbRes = await getProposalIpfsAddrList();
+    if (dbRes.errors.length > 0) {
+      return { proposalListRes, errors: dbRes.errors };
+    }
+
+    // for each ipfs address
+    dbRes.ipfsAddrs.forEach(async (ipfsAddr: string) => {
+      // from ipfs by ipfs address
+      const ipfsErrs = await setProposalIpfsRecord(ipfsAddr);
+      if (ipfsErrs.length > 0) {
+        errors = ipfsErrs;
+        return;
+      }
+
+      // from blockchain by proposal id
+      const proposalDetail = await getProposalDetail(
+        proposalIpfsRecord.proposal_id
+      );
+
+      // create res
+      const proposal: ListProposal = {
+        proposalId: proposalIpfsRecord.proposal_id,
+        title: proposalIpfsRecord.title,
+        state: proposalDetail.state,
+        voteEnd: proposalDetail.voteEnd,
+        createdAt: proposalIpfsRecord.created_at,
+      };
+      proposalListRes.push(proposal);
+    });
+
+    return { proposalListRes, errors };
   };
 
   const createProposalRes = reactive<CreateProposalRes>({
@@ -124,6 +166,7 @@ export const useProposal = () => {
   return {
     getDescriptionHash,
     getProposalId,
+    getProposalList,
     createProposalRes,
     createProposal,
   };
