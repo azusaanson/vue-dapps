@@ -1,5 +1,5 @@
 <template>
-  <div class="detail-header">
+  <div class="detail-frame">
     <span class="detail-frame2">{{ proposal.title }}</span>
     <el-tag size="large">{{ proposal.state }}</el-tag>
     <el-tooltip
@@ -23,25 +23,57 @@
     </div>
   </div>
   <div class="detail-frame">
-    <div class="detail-text">
-      <span class="detail-frame2">For: {{ proposal.forVotes }}</span>
-      <span class="detail-frame2">Against: {{ proposal.againstVotes }}</span>
-      <span>abstain: {{ proposal.abstainVotes }}</span>
+    <div class="detail-vote">
+      <el-progress
+        class="detail-frame2"
+        type="circle"
+        :percentage="forPercentage"
+        status="success"
+        :width="200"
+      >
+        <span>For {{ proposal.forVotes }}</span>
+      </el-progress>
+      <el-progress
+        class="detail-frame2"
+        type="circle"
+        :percentage="againstPercentage"
+        status="exception"
+        :width="200"
+      >
+        <span>Against {{ proposal.againstVotes }}</span>
+      </el-progress>
+      <el-progress
+        class="detail-frame2"
+        type="circle"
+        :percentage="abstainPercentage"
+        status="warning"
+        :width="200"
+      >
+        <span>Abstain {{ proposal.abstainVotes }}</span>
+      </el-progress>
     </div>
   </div>
-  <div class="detail-frame">
+  <div class="detail-frame-border">
     <div class="detail-text">
       <div class="detail-overview">Overview</div>
       <div>{{ proposal.overview }}</div>
     </div>
   </div>
-  <div class="detail-frame">
+  <div class="detail-frame-border">
     <div class="detail-text">
       <div>Actions</div>
       <div v-for="cnt in actionCount" :key="cnt" class="detail-text">
         <span class="detail-frame2">#{{ cnt }}</span>
         <span>{{ proposal.calldataDescs[cnt - 1] }}</span>
-        <div>target contract: {{ proposal.targetContractAddrs[cnt - 1] }}</div>
+        <el-tooltip
+          :content="proposal.targetContractAddrs[cnt - 1]"
+          placement="bottom"
+          effect="light"
+          ><div>
+            target contract:
+            {{ shortAddress(proposal.targetContractAddrs[cnt - 1]) }}
+          </div>
+        </el-tooltip>
         <el-tooltip
           :content="proposal.calldatas[cnt - 1]"
           placement="bottom"
@@ -56,33 +88,57 @@
 
 <script setup lang="ts">
 import { useProposal } from "@/utils/useProposal";
+import { useVote } from "@/utils/useVote";
 import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 
 const { proposal, setProposal } = useProposal();
+const { calVotesPercentage } = useVote();
 const route = useRoute();
 
 const id = ref("");
 const actionCount = ref(0);
+const forPercentage = ref(0);
+const againstPercentage = ref(0);
+const abstainPercentage = ref(0);
 
 const createdAtDate = computed(() => toDate(proposal.createdAt));
 const shortProposalId = computed(() => shortHash(proposal.proposalId));
 const shortProposer = computed(() => shortAddress(proposal.proposer));
 
+const calVotes = async () => {
+  const forPer = await calVotesPercentage(
+    proposal.proposalId,
+    proposal.forVotes
+  );
+  forPercentage.value = forPer;
+  const againstPer = await calVotesPercentage(
+    proposal.proposalId,
+    proposal.againstVotes
+  );
+  againstPercentage.value = againstPer;
+  const abstainPer = await calVotesPercentage(
+    proposal.proposalId,
+    proposal.abstainVotes
+  );
+  abstainPercentage.value = abstainPer;
+};
+
 onMounted(async () => {
   id.value = route.params.id as string;
   await setProposal(id.value);
   actionCount.value = proposal.calldataDescs.length;
+  await calVotes();
 });
 </script>
 
 <style>
-.detail-header {
+.detail-frame {
   width: 60%;
   margin: 50px 0 50px 20%;
 }
-.detail-frame {
+.detail-frame-border {
   width: 60%;
   margin: 50px 0 50px 20%;
   border: solid rgb(198, 198, 198);
@@ -90,6 +146,10 @@ onMounted(async () => {
 }
 .detail-frame2 {
   margin-right: 20px;
+}
+.detail-vote {
+  display: flex;
+  justify-content: center;
 }
 .detail-text {
   margin: 20px;

@@ -1,4 +1,5 @@
 import { MYGOVERNOR_ADDRESS, MYTOKEN_ADDRESS } from "@/consts/index";
+import { useMyToken } from "@/utils/useMyToken";
 import { MyGovernor__factory } from "@/abis/index";
 import { ethers, Eip1193Provider, EventLog } from "ethers";
 import { reactive } from "vue";
@@ -79,6 +80,34 @@ export const useMyGovernor = () => {
       deadline: Number(deadline),
       proposer: proposer,
     };
+  };
+
+  const getQuorumOfProposal = async (proposalId: string) => {
+    const myGovernorContract = contract();
+    const snapshot = await myGovernorContract
+      .proposalSnapshot(proposalId)
+      .catch((err) => {
+        console.error(err);
+        return BigInt(0);
+      });
+    if (snapshot == BigInt(0)) {
+      return 0;
+    }
+
+    const { getBlock } = useMyToken();
+    const block = await getBlock();
+    if (block < snapshot) {
+      return 0;
+    }
+
+    const quorum = await myGovernorContract
+      .quorum(snapshot - BigInt(1))
+      .catch((err) => {
+        console.error(err);
+        return BigInt(0);
+      });
+
+    return Number(quorum);
   };
 
   const getProposalVotes = async (proposalId: string) => {
@@ -177,6 +206,7 @@ export const useMyGovernor = () => {
   return {
     getProposalDetail,
     getProposalVotes,
+    getQuorumOfProposal,
     proposeRes,
     propose,
   };

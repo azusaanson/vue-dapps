@@ -16,10 +16,21 @@ export const useMyToken = () => {
 
     const balance = await myTokenContract.balanceOf(address).catch((err) => {
       console.error(err);
-      return 0;
+      return BigInt(0);
     });
 
     return Number(balance);
+  };
+
+  const getBlock = async () => {
+    const myTokenContract = contract();
+
+    const block = await myTokenContract.clock().catch((err) => {
+      console.error(err);
+      return BigInt(0);
+    });
+
+    return Number(block);
   };
 
   const myTokenFuncType = {
@@ -52,6 +63,7 @@ export const useMyToken = () => {
 
   return {
     getBalance,
+    getBlock,
     myTokenFuncType,
     encodeTransfer,
     encodeUpdateGovernor,
