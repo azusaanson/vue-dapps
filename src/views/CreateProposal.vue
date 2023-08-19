@@ -94,7 +94,7 @@
         type="primary"
         v-loading="isCreating"
         :disabled="isProposeDisabled || isCreating"
-        @click="createProposal"
+        @click="propose"
         >Propose</el-button
       >
       <router-link to="/" class="margin-left"
@@ -104,13 +104,13 @@
     <div class="frame create-succeed" v-if="isCreateSucceed">
       <div>Propose Succeed!</div>
       <div>Proposal Detail</div>
-      <div>proposal id: {{ proposal.proposalId }}</div>
-      <div>title: {{ proposal.title }}</div>
-      <div>proposer address: {{ proposal.proposer }}</div>
-      <div>vote start at: block #{{ proposal.voteStart }}</div>
-      <div>vote end at: block #{{ proposal.voteEnd }}</div>
-      <div>target contract addresses: {{ proposal.targetContractAddrs }}</div>
-      <div>target encoded functions: {{ proposal.calldatas }}</div>
+      <div>proposal id: {{ createProposalRes.proposalId }}</div>
+      <div>title: {{ createProposalRes.title }}</div>
+      <div>overview: {{ createProposalRes.overview }}</div>
+      <div>vote start at: block #{{ createProposalRes.voteStart }}</div>
+      <div>vote end at: block #{{ createProposalRes.voteEnd }}</div>
+      <div>ipfs address: {{ createProposalRes.ipfsAddress }}</div>
+      <div>firebase id: {{ createProposalRes.firebaseID }}</div>
     </div>
     <div class="frame create-failed" v-if="isCreateFailed">
       Propose Failed! Errors: {{ createErrors }}
@@ -121,10 +121,10 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { isAddress } from "web3-validator";
-import { useMyGovernor } from "@/utils/useMyGovernor";
+import { useProposal } from "@/utils/useProposal";
 import { useMyToken } from "@/utils/useMyToken";
 
-const { proposal, propose } = useMyGovernor();
+const { createProposalRes, createProposal } = useProposal();
 const {
   myTokenFuncType,
   encodeTransfer,
@@ -273,7 +273,8 @@ const createErrors = ref<string[]>([]);
 const isAfterCreate = ref(false);
 
 const isCreateSucceed = computed(
-  () => proposal.proposalId != "0" && proposal.proposalId != ""
+  () =>
+    createProposalRes.proposalId != "0" && createProposalRes.proposalId != ""
 );
 const isCreateFailed = computed(() => createErrors.value.length > 0);
 const isCreating = computed(
@@ -283,15 +284,17 @@ const isCreating = computed(
 const initCreateProposal = () => {
   createErrors.value = [];
   isAfterCreate.value = false;
-  proposal.proposalId = "0";
+  createProposalRes.proposalId = "0";
 };
-const createProposal = () => {
+const propose = () => {
   initCreateProposal();
-  propose(encodedTargetFuncs.value, title.value).then((resErrs) => {
-    if (resErrs.length > 0) {
-      createErrors.value = resErrs;
+  createProposal(encodedTargetFuncs.value, title.value, overview.value).then(
+    (resErrs) => {
+      if (resErrs.length > 0) {
+        createErrors.value = resErrs;
+      }
     }
-  });
+  );
   isAfterCreate.value = true;
 };
 </script>

@@ -40,8 +40,9 @@ npm run typechain
 - [Web3js](https://web3js.readthedocs.io/en/v1.2.11/index.html)
 - [Compound](https://compound.finance/governance)
 - [Element-plus](https://element-plus.org/en-US/component/button.html)
-- [OrbitDB](https://github.com/orbitdb/orbitdb)
 - [TypeChain](https://github.com/dethcrypto/TypeChain)
+- [Firebase: Cloud Firestore](https://firebase.google.com/docs/firestore?authuser=0)
+- [IPFS: Helia](https://github.com/ipfs/helia)
 
 ### Customize configuration
 

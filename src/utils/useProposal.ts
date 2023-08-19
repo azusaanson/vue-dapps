@@ -1,6 +1,8 @@
 import { Web3 } from "web3";
 import { keccak256, toUtf8Bytes } from "ethers";
-
+import { useMyGovernor } from "@/utils/useMyGovernor";
+import { useDB } from "@/utils/useDB";
+import { reactive } from "vue";
 export interface Proposal {
   id: number;
   proposalId: string;
@@ -26,9 +28,16 @@ export interface ListProposal {
   title: string;
   state: string;
   voteEnd: number;
-  againstVotes: number;
-  forVotes: number;
-  abstainVotes: number;
+}
+
+export interface CreateProposalRes {
+  proposalId: string;
+  title: string;
+  overview: string;
+  voteStart: number;
+  voteEnd: number;
+  ipfsAddress: string;
+  firebaseID: string;
 }
 
 export const useProposal = () => {
@@ -50,5 +59,56 @@ export const useProposal = () => {
     );
   };
 
-  return { getDescriptionHash, getProposalId };
+  const createProposalRes = reactive<CreateProposalRes>({
+    proposalId: "0",
+    title: "",
+    overview: "",
+    voteStart: 0,
+    voteEnd: 0,
+    ipfsAddress: "",
+    firebaseID: "",
+  });
+
+  const createProposal = async (
+    encodedCalldatas: string[],
+    title: string,
+    overview: string
+  ) => {
+    // create proposal in contract
+    const { proposeRes, propose } = useMyGovernor();
+
+    const proposeErrs = await propose(encodedCalldatas, title);
+    if (proposeErrs.length > 0) {
+      return proposeErrs;
+    }
+
+    // create record in db
+    const { createProposalRecord } = useDB();
+
+    const newProposalRecord = "ipfs address" + proposeRes.proposalId;
+
+    const dbRes = await createProposalRecord(newProposalRecord);
+    if (dbRes.errors.length > 0) {
+      return dbRes.errors;
+    }
+
+    Object.assign(createProposalRes, {
+      proposalId: proposeRes.proposalId,
+      title: title,
+      overview: overview,
+      voteStart: proposeRes.voteStart,
+      voteEnd: proposeRes.voteEnd,
+      ipfsAddress: newProposalRecord,
+      firebaseID: dbRes.id,
+    });
+
+    return [];
+  };
+
+  return {
+    getDescriptionHash,
+    getProposalId,
+    createProposalRes,
+    createProposal,
+  };
 };

@@ -3,7 +3,7 @@ import { MyGovernor__factory } from "@/abis/index";
 import { ethers, Eip1193Provider, EventLog } from "ethers";
 import { reactive } from "vue";
 
-export interface ProposeResProposal {
+export interface ProposeRes {
   proposalId: string;
   proposer: string;
   targetContractAddrs: string[];
@@ -16,19 +16,7 @@ export interface ProposeResProposal {
 }
 
 export const useMyGovernor = () => {
-  const proposal = reactive<ProposeResProposal>({
-    proposalId: "0",
-    proposer: "",
-    targetContractAddrs: [],
-    ethValues: [],
-    signatures: [],
-    calldatas: [],
-    voteStart: 0,
-    voteEnd: 0,
-    title: "",
-  });
-
-  const getContract = () => {
+  const contract = () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
     );
@@ -71,7 +59,7 @@ export const useMyGovernor = () => {
   };
 
   const getProposalDetail = async (proposalId: string) => {
-    const myGovernorContract = getContract();
+    const myGovernorContract = contract();
 
     const { state, snapshot, deadline, proposer } = await myGovernorContract
       .proposalDetail(proposalId)
@@ -94,7 +82,7 @@ export const useMyGovernor = () => {
   };
 
   const getProposalVotes = async (proposalId: string) => {
-    const myGovernorContract = getContract();
+    const myGovernorContract = contract();
 
     const { againstVotes, forVotes, abstainVotes } = await myGovernorContract
       .proposalVotes(proposalId)
@@ -114,7 +102,7 @@ export const useMyGovernor = () => {
     };
   };
 
-  const getContractSigner = async () => {
+  const contractSigner = async () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
     );
@@ -123,9 +111,21 @@ export const useMyGovernor = () => {
     return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, signer);
   };
 
+  const proposeRes = reactive<ProposeRes>({
+    proposalId: "0",
+    proposer: "",
+    targetContractAddrs: [],
+    ethValues: [],
+    signatures: [],
+    calldatas: [],
+    voteStart: 0,
+    voteEnd: 0,
+    title: "",
+  });
+
   const propose = async (encodedCalldatas: string[], title: string) => {
     const errors: string[] = [];
-    const myGovernorContractSigner = await getContractSigner();
+    const myGovernorContractSigner = await contractSigner();
 
     const ethValues = new Array(encodedCalldatas.length).fill(0);
     const myTokenAddrs = new Array(encodedCalldatas.length).fill(
@@ -156,20 +156,28 @@ export const useMyGovernor = () => {
           voteEnd,
           description,
         } = txReceipt.logs[0].args;
-        proposal.proposalId = String(proposalId);
-        proposal.proposer = proposer;
-        proposal.targetContractAddrs = targets;
-        proposal.ethValues = ethValues; // 0 array because fixed req
-        proposal.signatures = signatures;
-        proposal.calldatas = calldatas;
-        proposal.voteStart = Number(voteStart);
-        proposal.voteEnd = Number(voteEnd);
-        proposal.title = description;
+
+        Object.assign(proposeRes, {
+          proposalId: String(proposalId),
+          proposer: proposer,
+          targetContractAddrs: targets,
+          ethValues: ethValues, // 0 array because fixed req
+          signatures: signatures,
+          calldatas: calldatas,
+          voteStart: Number(voteStart),
+          voteEnd: Number(voteEnd),
+          title: description,
+        });
       }
     }
 
     return errors;
   };
 
-  return { proposal, getProposalDetail, getProposalVotes, propose };
+  return {
+    getProposalDetail,
+    getProposalVotes,
+    proposeRes,
+    propose,
+  };
 };
