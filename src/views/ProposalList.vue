@@ -1,5 +1,5 @@
 <template>
-  <div class="header">
+  <div class="proposal-list-header">
     <span>Proposals</span>
     <router-link to="/propose"
       ><el-button round type="primary">Propose</el-button></router-link
@@ -9,13 +9,21 @@
     Errors: {{ proposalListErrors }}
   </div>
 
-  <div class="frame" v-for="proposal in proposalList" :key="proposal.createdAt">
-    <router-link :to="`/proposal/${proposal.id}`">
-      <div>proposalId: {{ proposal.proposalId }}</div>
-      <span class="frame2">title: {{ proposal.title }}</span>
-      <span class="frame2">created at:{{ proposal.createdAt }} </span>
+  <el-row v-for="proposal in proposalList" :key="proposal.createdAt"
+    ><router-link class="proposal-list-frame" :to="`/proposal/${proposal.id}`">
+      <el-button link>
+        <el-col :span="24" class="proposal-list-frame2">
+          <span class="proposal-list-frame3"
+            >proposalId: {{ proposal.proposalId }}</span
+          >
+          <span class="proposal-list-frame3">title: {{ proposal.title }}</span>
+          <span class="proposal-list-frame3"
+            >created at:{{ proposal.createdAt }}
+          </span>
+        </el-col>
+      </el-button>
     </router-link>
-  </div>
+  </el-row>
 </template>
 
 <script setup lang="ts">
@@ -43,19 +51,23 @@ onMounted(() => {
 </script>
 
 <style>
-.header {
+.proposal-list-header {
   width: 60%;
   display: grid;
   grid-template-columns: 1fr auto;
   justify-content: space-around;
   margin: 50px 0 50px 20%;
 }
-.frame {
+.proposal-list-frame {
   width: 60%;
   margin: 50px 0 50px 20%;
+  border: solid rgb(198, 198, 198);
+  border-radius: 15px;
 }
-.frame2 {
-  display: inline-block;
+.proposal-list-frame2 {
+  margin: 20px;
+}
+.proposal-list-frame3 {
   margin-right: 20px;
 }
 </style>
