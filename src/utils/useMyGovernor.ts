@@ -74,9 +74,9 @@ export const useMyGovernor = () => {
       });
 
     return {
-      state: toStateString(Number(state)),
-      voteStart: Number(snapshot),
-      voteEnd: Number(deadline),
+      stateString: toStateString(Number(state)),
+      snapshot: Number(snapshot),
+      deadline: Number(deadline),
       proposer: proposer,
     };
   };
