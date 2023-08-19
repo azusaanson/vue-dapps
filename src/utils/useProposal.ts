@@ -106,7 +106,6 @@ export const useProposal = () => {
     const { proposalRecordOutput, setProposalRecord } = useDB();
 
     await setProposalRecord(id);
-    console.log(proposalRecordOutput.proposal_id);
 
     // from blockchain
     const { getProposalDetail, getProposalVotes } = useMyGovernor();

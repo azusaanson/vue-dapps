@@ -14,9 +14,11 @@
           </template>
         </el-dropdown>
       </el-button>
-      <el-button round type="primary" plain>{{
-        computedShortAddress
-      }}</el-button>
+      <el-tooltip :content="address" placement="bottom" effect="light">
+        <el-button round type="primary" plain>{{
+          computedShortAddress
+        }}</el-button>
+      </el-tooltip>
     </el-button-group>
     <el-button round type="primary" plain @click="connectWallet" v-else
       >Connect Wallet</el-button
@@ -28,7 +30,7 @@
 <script setup lang="ts">
 import { useMetamask } from "@/utils/useWallet";
 import { useMyToken } from "@/utils/useMyToken";
-import { shortAddress } from "@/utils/useAddress";
+import { shortAddress } from "@/utils/useCommon";
 import { MYTOKEN_SYMBOL } from "@/consts/index";
 import { ref, onMounted, computed } from "vue";
 

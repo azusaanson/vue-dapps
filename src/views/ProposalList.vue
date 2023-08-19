@@ -13,12 +13,12 @@
     ><router-link class="proposal-list-frame" :to="`/proposal/${proposal.id}`">
       <el-button link>
         <el-col :span="24" class="proposal-list-frame2">
+          <span class="proposal-list-frame3">{{ proposal.title }}</span>
           <span class="proposal-list-frame3"
-            >proposalId: {{ proposal.proposalId }}</span
+            >proposal ID: {{ shortHash(proposal.proposalId) }}</span
           >
-          <span class="proposal-list-frame3">title: {{ proposal.title }}</span>
           <span class="proposal-list-frame3"
-            >created at:{{ proposal.createdAt }}
+            >created at:{{ toDate(proposal.createdAt) }}
           </span>
         </el-col>
       </el-button>
@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useProposal, ListProposal } from "@/utils/useProposal";
+import { toDate, shortHash } from "@/utils/useCommon";
 
 const { getProposalList } = useProposal();
 

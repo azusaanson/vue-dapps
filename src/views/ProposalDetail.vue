@@ -2,8 +2,16 @@
   <div class="detail-header">
     <span class="detail-frame2">{{ proposal.title }}</span>
     <el-tag size="large">{{ proposal.state }}</el-tag>
-    <div>proposal id: {{ proposal.proposalId }}</div>
-    <div>proposer: {{ proposal.proposer }}</div>
+    <el-tooltip
+      :content="proposal.proposalId"
+      placement="bottom"
+      effect="light"
+    >
+      <div>proposal ID: {{ shortProposalId }}</div>
+    </el-tooltip>
+    <el-tooltip :content="proposal.proposer" placement="bottom" effect="light">
+      <div>proposer: {{ shortProposer }}</div>
+    </el-tooltip>
     <div>
       <span class="detail-frame2"
         >vote start at: Block #{{ proposal.voteStart }}</span
@@ -11,7 +19,7 @@
       <span class="detail-frame2"
         >vote end at: Block #{{ proposal.voteEnd }}</span
       >
-      <span>created at: {{ proposal.createdAt }}</span>
+      <span>created at: {{ createdAtDate }}</span>
     </div>
   </div>
   <div class="detail-frame">
@@ -23,7 +31,7 @@
   </div>
   <div class="detail-frame">
     <div class="detail-text">
-      <div>Overview</div>
+      <div class="detail-overview">Overview</div>
       <div>{{ proposal.overview }}</div>
     </div>
   </div>
@@ -34,7 +42,13 @@
         <span class="detail-frame2">#{{ cnt }}</span>
         <span>{{ proposal.calldataDescs[cnt - 1] }}</span>
         <div>target contract: {{ proposal.targetContractAddrs[cnt - 1] }}</div>
-        <div>hash: {{ proposal.calldatas[cnt - 1] }}</div>
+        <el-tooltip
+          :content="proposal.calldatas[cnt - 1]"
+          placement="bottom"
+          effect="light"
+        >
+          <div>hash: {{ shortHash(proposal.calldatas[cnt - 1]) }}</div>
+        </el-tooltip>
       </div>
     </div>
   </div>
@@ -42,7 +56,8 @@
 
 <script setup lang="ts">
 import { useProposal } from "@/utils/useProposal";
-import { ref, onMounted } from "vue";
+import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 
 const { proposal, setProposal } = useProposal();
@@ -50,6 +65,10 @@ const route = useRoute();
 
 const id = ref("");
 const actionCount = ref(0);
+
+const createdAtDate = computed(() => toDate(proposal.createdAt));
+const shortProposalId = computed(() => shortHash(proposal.proposalId));
+const shortProposer = computed(() => shortAddress(proposal.proposer));
 
 onMounted(async () => {
   id.value = route.params.id as string;
@@ -74,5 +93,8 @@ onMounted(async () => {
 }
 .detail-text {
   margin: 20px;
+}
+.detail-overview {
+  margin-bottom: 20px;
 }
 </style>
