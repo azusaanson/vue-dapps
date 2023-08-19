@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="frame">
     <div>proposalId: {{ proposal.proposalId }}</div>
     <div>title: {{ proposal.title }}</div>
     <div>state: {{ proposal.state }}</div>
@@ -20,14 +20,34 @@
 
 <script setup lang="ts">
 import { useProposal } from "@/utils/useProposal";
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
-const route = useRoute();
-const id = route.query.id;
 const { proposal, setProposal } = useProposal();
+const route = useRoute();
+
+const id = ref("");
 
 onMounted(async () => {
-  await setProposal(String(id));
+  id.value = route.params.id as string;
+  await setProposal(id.value);
 });
 </script>
+
+<style>
+.header {
+  width: 60%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  justify-content: space-around;
+  margin: 50px 0 50px 20%;
+}
+.frame {
+  width: 60%;
+  margin: 50px 0 50px 20%;
+}
+.frame2 {
+  display: inline-block;
+  margin-right: 20px;
+}
+</style>

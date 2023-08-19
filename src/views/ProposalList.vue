@@ -10,8 +10,8 @@
   </div>
 
   <div class="frame" v-for="proposal in proposalList" :key="proposal.createdAt">
-    <router-link :to="`/proposal/${proposal.proposalId}`">
-      <span class="frame2">proposalId: {{ proposal.proposalId }}</span>
+    <router-link :to="`/proposal/${proposal.id}`">
+      <div>proposalId: {{ proposal.proposalId }}</div>
       <span class="frame2">title: {{ proposal.title }}</span>
       <span class="frame2">created at:{{ proposal.createdAt }} </span>
     </router-link>
@@ -41,6 +41,7 @@ onMounted(() => {
   setProposalList();
 });
 </script>
+
 <style>
 .header {
   width: 60%;
