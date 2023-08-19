@@ -106,7 +106,6 @@
       <div>Proposal Detail</div>
       <div>proposal id: {{ createProposalRes.proposalId }}</div>
       <div>title: {{ createProposalRes.title }}</div>
-      <div>overview: {{ createProposalRes.overview }}</div>
       <div>vote start at: block #{{ createProposalRes.voteStart }}</div>
       <div>vote end at: block #{{ createProposalRes.voteEnd }}</div>
       <div>ipfs address: {{ createProposalRes.ipfsAddress }}</div>
@@ -288,13 +287,16 @@ const initCreateProposal = () => {
 };
 const propose = () => {
   initCreateProposal();
-  createProposal(encodedTargetFuncs.value, title.value, overview.value).then(
-    (resErrs) => {
-      if (resErrs.length > 0) {
-        createErrors.value = resErrs;
-      }
+  createProposal(
+    encodedTargetFuncs.value,
+    title.value,
+    overview.value,
+    targetFuncDescs.value
+  ).then((resErrs) => {
+    if (resErrs.length > 0) {
+      createErrors.value = resErrs;
     }
-  );
+  });
   isAfterCreate.value = true;
 };
 </script>

@@ -1,6 +1,7 @@
 import { Web3 } from "web3";
 import { keccak256, toUtf8Bytes } from "ethers";
 import { useMyGovernor } from "@/utils/useMyGovernor";
+import { useIpfs, ProposalIpfsRecord } from "@/utils/useIpfs";
 import { useDB } from "@/utils/useDB";
 import { reactive } from "vue";
 export interface Proposal {
@@ -33,7 +34,6 @@ export interface ListProposal {
 export interface CreateProposalRes {
   proposalId: string;
   title: string;
-  overview: string;
   voteStart: number;
   voteEnd: number;
   ipfsAddress: string;
@@ -62,7 +62,6 @@ export const useProposal = () => {
   const createProposalRes = reactive<CreateProposalRes>({
     proposalId: "0",
     title: "",
-    overview: "",
     voteStart: 0,
     voteEnd: 0,
     ipfsAddress: "",
@@ -72,7 +71,8 @@ export const useProposal = () => {
   const createProposal = async (
     encodedCalldatas: string[],
     title: string,
-    overview: string
+    overview: string,
+    callDataDescs: string[]
   ) => {
     // create proposal in contract
     const { proposeRes, propose } = useMyGovernor();
@@ -82,12 +82,29 @@ export const useProposal = () => {
       return proposeErrs;
     }
 
-    // create record in db
+    // create record in ipfs
+    const { createProposalIpfsRecord } = await useIpfs();
+
+    const newProposalIpfsRecord: ProposalIpfsRecord = {
+      proposal_id: proposeRes.proposalId,
+      title: title,
+      overview: overview,
+      target_contract_addresses: proposeRes.targetContractAddrs,
+      eth_values: proposeRes.ethValues,
+      call_datas: proposeRes.calldatas,
+      call_data_descriptions: callDataDescs,
+      created_at: Date.now(),
+    };
+
+    const ipfsRes = await createProposalIpfsRecord(newProposalIpfsRecord);
+    if (ipfsRes.errors.length > 0) {
+      return ipfsRes.errors;
+    }
+
+    // create record in firebase db
     const { createProposalRecord } = useDB();
 
-    const newProposalRecord = "ipfs address" + proposeRes.proposalId;
-
-    const dbRes = await createProposalRecord(newProposalRecord);
+    const dbRes = await createProposalRecord(ipfsRes.ipfsAddress);
     if (dbRes.errors.length > 0) {
       return dbRes.errors;
     }
@@ -95,10 +112,9 @@ export const useProposal = () => {
     Object.assign(createProposalRes, {
       proposalId: proposeRes.proposalId,
       title: title,
-      overview: overview,
       voteStart: proposeRes.voteStart,
       voteEnd: proposeRes.voteEnd,
-      ipfsAddress: newProposalRecord,
+      ipfsAddress: ipfsRes.ipfsAddress,
       firebaseID: dbRes.id,
     });
 
