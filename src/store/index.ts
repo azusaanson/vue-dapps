@@ -1,9 +1,15 @@
 import { createStore } from "vuex";
 
 export default createStore({
-  state: {},
+  state: {
+    walletAddress: "",
+  },
   getters: {},
-  mutations: {},
+  mutations: {
+    setWalletAddress(state, newAddress) {
+      state.walletAddress = newAddress;
+    },
+  },
   actions: {},
   modules: {},
 });

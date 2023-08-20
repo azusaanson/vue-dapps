@@ -2,6 +2,14 @@
   <div class="detail-frame">
     <span class="detail-frame2">{{ proposal.title }}</span>
     <el-tag size="large">{{ proposal.state }}</el-tag>
+    <el-button
+      type="danger"
+      round
+      class="detail-frame3"
+      v-if="canProposalCancel"
+      @click="showConfirmCancelDialog = true"
+      >Cancel</el-button
+    >
     <el-tooltip
       :content="proposal.proposalId"
       placement="bottom"
@@ -84,6 +92,31 @@
       </div>
     </div>
   </div>
+
+  <el-dialog
+    v-model="showConfirmCancelDialog"
+    title="Cancel Proposal"
+    width="30%"
+  >
+    <span>Are you sure? Cannot undo</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showConfirmCancelDialog = false" round
+          >I'm not sure</el-button
+        >
+        <el-button
+          type="danger"
+          @click="
+            showConfirmCancelDialog = false;
+            cancel();
+          "
+          round
+        >
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -92,8 +125,12 @@ import { useVote } from "@/utils/useVote";
 import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
+import { useStore } from "vuex";
 
-const { proposal, setProposal } = useProposal();
+const store = useStore();
+const walletAddress = computed(() => store.state.walletAddress);
+
+const { proposal, setProposal, canCancel, cancelProposal } = useProposal();
 const { calVotesPercentage } = useVote();
 const route = useRoute();
 
@@ -102,10 +139,16 @@ const actionCount = ref(0);
 const forPercentage = ref(0);
 const againstPercentage = ref(0);
 const abstainPercentage = ref(0);
+const errors = ref<string[]>([]);
+const cancaledProposalId = ref("");
+const showConfirmCancelDialog = ref(false);
 
 const createdAtDate = computed(() => toDate(proposal.createdAt));
 const shortProposalId = computed(() => shortHash(proposal.proposalId));
 const shortProposer = computed(() => shortAddress(proposal.proposer));
+const canProposalCancel = computed(() =>
+  canCancel(proposal.state, proposal.proposer, walletAddress.value)
+);
 
 const calVotes = async () => {
   const forPer = await calVotesPercentage(
@@ -124,6 +167,20 @@ const calVotes = async () => {
   );
   abstainPercentage.value = abstainPer;
 };
+const cancel = () => {
+  cancelProposal(
+    proposal.targetContractAddrs,
+    proposal.ethValues,
+    proposal.calldatas,
+    proposal.title
+  ).then((res) => {
+    if (res.errors.length > 0) {
+      errors.value = res.errors;
+      return;
+    }
+    cancaledProposalId.value = res.proposalId;
+  });
+};
 
 onMounted(async () => {
   id.value = route.params.id as string;
@@ -140,12 +197,15 @@ onMounted(async () => {
 }
 .detail-frame-border {
   width: 60%;
-  margin: 50px 0 50px 20%;
+  margin: 0 0 50px 20%;
   border: solid rgb(198, 198, 198);
   border-radius: 15px;
 }
 .detail-frame2 {
   margin-right: 20px;
+}
+.detail-frame3 {
+  margin-left: 50px;
 }
 .detail-vote {
   display: flex;

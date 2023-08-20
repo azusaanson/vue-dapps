@@ -94,26 +94,55 @@
         type="primary"
         v-loading="isCreating"
         :disabled="isProposeDisabled || isCreating"
-        @click="propose"
+        @click="showConfirmProposeDialog = true"
         >Propose</el-button
       >
       <router-link to="/" class="margin-left"
-        ><el-button round type="danger">Cancel</el-button></router-link
+        ><el-button
+          round
+          type="danger"
+          :disabled="isCreating"
+          v-loading="isCreating"
+          >Cancel</el-button
+        ></router-link
       >
     </div>
-    <div class="frame create-succeed" v-if="isCreateSucceed">
-      <div>Propose Succeed!</div>
-      <div>Proposal Detail</div>
-      <div>proposal id: {{ createProposalRes.proposalId }}</div>
-      <div>title: {{ createProposalRes.title }}</div>
-      <div>vote start at: block #{{ createProposalRes.voteStart }}</div>
-      <div>vote end at: block #{{ createProposalRes.voteEnd }}</div>
-      <div>firebase id: {{ createProposalRes.firebaseID }}</div>
-    </div>
-    <div class="frame create-failed" v-if="isCreateFailed">
-      Propose Failed! Errors: {{ createErrors }}
-    </div>
   </div>
+
+  <el-dialog
+    v-model="showConfirmProposeDialog"
+    title="Create Proposal"
+    width="30%"
+  >
+    <span>{{ title }}</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showConfirmProposeDialog = false" round
+          >Cancel</el-button
+        >
+        <el-button
+          type="primary"
+          @click="
+            showConfirmProposeDialog = false;
+            propose();
+          "
+          round
+        >
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="isCreateSucceed" title="Propose Succeed!" width="50%">
+    <div>proposal id: {{ createProposalRes.proposalId }}</div>
+    <div>title: {{ createProposalRes.title }}</div>
+    <div>vote start at: block #{{ createProposalRes.voteStart }}</div>
+    <div>vote end at: block #{{ createProposalRes.voteEnd }}</div>
+    <div>firebase id: {{ createProposalRes.firebaseID }}</div>
+  </el-dialog>
+  <el-dialog v-model="isCreateFailed" title="Propose Failed!" width="50%">
+    <span>{{ createErrors }}</span>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -140,6 +169,7 @@ const paramUint = ref<number>(0);
 const paramAddress = ref<string>("");
 const actionCount = ref(0);
 const isAddingAction = ref(false);
+const showConfirmProposeDialog = ref(false);
 
 const funcOptions = [
   { value: myTokenFuncType.transfer, label: myTokenFuncType.transfer },

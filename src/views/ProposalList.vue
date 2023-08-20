@@ -61,7 +61,7 @@ onMounted(() => {
 }
 .proposal-list-frame {
   width: 60%;
-  margin: 50px 0 50px 20%;
+  margin: 20px 0 0 20%;
   border: solid rgb(198, 198, 198);
   border-radius: 15px;
 }

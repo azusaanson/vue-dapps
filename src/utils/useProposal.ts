@@ -1,5 +1,5 @@
 import { Web3 } from "web3";
-import { keccak256, toUtf8Bytes } from "ethers";
+import { keccak256, toUtf8Bytes, getAddress } from "ethers";
 import { useMyGovernor } from "@/utils/useMyGovernor";
 import {
   useDB,
@@ -7,6 +7,7 @@ import {
   ProposalRecordOutput,
 } from "@/utils/useDB";
 import { reactive } from "vue";
+
 export interface Proposal {
   id: string;
   proposalId: string;
@@ -42,11 +43,11 @@ export interface CreateProposalRes {
 }
 
 export const useProposal = () => {
-  const getDescriptionHash = (title: string) => {
+  const toDescriptionHash = (title: string) => {
     return keccak256(toUtf8Bytes(title));
   };
 
-  const getProposalId = (
+  const toProposalId = (
     targetContractAddrs: string[],
     ethValues: number[],
     calldatas: string[],
@@ -56,7 +57,7 @@ export const useProposal = () => {
 
     return web3.eth.abi.encodeParameters(
       ["address[]", "uint256[]", "bytes[]", "bytes32"],
-      [targetContractAddrs, ethValues, calldatas, getDescriptionHash(title)]
+      [targetContractAddrs, ethValues, calldatas, toDescriptionHash(title)]
     );
   };
 
@@ -190,13 +191,52 @@ export const useProposal = () => {
     return [];
   };
 
+  const cancelProposal = async (
+    targetContractAddrs: string[],
+    ethValues: number[],
+    encodedCalldatas: string[],
+    title: string
+  ) => {
+    const { cancel } = useMyGovernor();
+
+    const cancelRes = await cancel(
+      targetContractAddrs,
+      ethValues,
+      encodedCalldatas,
+      toDescriptionHash(title)
+    );
+    if (cancelRes.errors.length > 0) {
+      return { proposalId: "", errors: cancelRes.errors };
+    }
+    return { proposalId: cancelRes.proposalIdRes, errors: [] };
+  };
+
+  const canCancel = (
+    state: string,
+    proposer: string,
+    walletAddress: string
+  ) => {
+    const { stateString } = useMyGovernor();
+
+    if (
+      walletAddress &&
+      state === stateString.pending &&
+      getAddress(walletAddress) == proposer
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
   return {
-    getDescriptionHash,
-    getProposalId,
+    toProposalId,
     getProposalList,
     proposal,
     setProposal,
     createProposalRes,
     createProposal,
+    cancelProposal,
+    canCancel,
   };
 };

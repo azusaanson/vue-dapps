@@ -14,7 +14,7 @@
           </template>
         </el-dropdown>
       </el-button>
-      <el-tooltip :content="address" placement="bottom" effect="light">
+      <el-tooltip :content="walletAddress" placement="bottom" effect="light">
         <el-button round type="primary" plain>{{
           computedShortAddress
         }}</el-button>
@@ -33,25 +33,28 @@ import { useMyToken } from "@/utils/useMyToken";
 import { shortAddress } from "@/utils/useCommon";
 import { MYTOKEN_SYMBOL } from "@/consts/index";
 import { ref, onMounted, computed } from "vue";
+import { useStore } from "vuex";
+
+const store = useStore();
+const walletAddress = computed(() => store.state.walletAddress);
 
 const { connectMetamask, getAccount, addToken } = useMetamask();
 const { getBalance } = useMyToken();
 
 const isWalletConnected = ref(false);
-const address = ref("");
 const balance = ref(0);
 
 const computedShortAddress = computed(() => {
-  return shortAddress(address.value);
+  return shortAddress(walletAddress.value);
 });
 
 const getAccountAndBalance = () => {
   getAccount().then((res) => {
     if (res && res !== "") {
       isWalletConnected.value = true;
-      address.value = res;
+      store.commit("setWalletAddress", res);
 
-      getBalance(address.value).then((balanceRes) => {
+      getBalance(walletAddress.value).then((balanceRes) => {
         balance.value = Number(balanceRes);
       });
     }
