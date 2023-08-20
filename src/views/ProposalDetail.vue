@@ -1,7 +1,7 @@
 <template>
   <div class="detail-frame">
     <span class="detail-frame2">{{ proposal.title }}</span>
-    <el-tag size="large">{{ proposal.state }}</el-tag>
+    <el-tag size="large" :type="stateTagType">{{ proposal.state }}</el-tag>
     <el-button
       type="danger"
       round
@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import { useProposal } from "@/utils/useProposal";
 import { useVote } from "@/utils/useVote";
+import { useMyGovernor } from "@/utils/useMyGovernor";
 import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
@@ -132,6 +133,7 @@ const walletAddress = computed(() => store.state.walletAddress);
 
 const { proposal, setProposal, canCancel, cancelProposal } = useProposal();
 const { calVotesPercentage } = useVote();
+const { stateString } = useMyGovernor();
 const route = useRoute();
 
 const id = ref("");
@@ -149,6 +151,26 @@ const shortProposer = computed(() => shortAddress(proposal.proposer));
 const canProposalCancel = computed(() =>
   canCancel(proposal.state, proposal.proposer, walletAddress.value)
 );
+const stateTagType = computed(() => {
+  switch (proposal.state) {
+    case stateString.active:
+      return "success";
+    case stateString.succeeded:
+      return "success";
+    case stateString.queued:
+      return "success";
+    case stateString.executed:
+      return "success";
+    case stateString.canceled:
+      return "info";
+    case stateString.defeated:
+      return "danger";
+    case stateString.expired:
+      return "warning";
+    default:
+      return "";
+  }
+});
 
 const calVotes = async () => {
   const forPer = await calVotesPercentage(
