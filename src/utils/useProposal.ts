@@ -1,3 +1,4 @@
+import { MYGOVERNOR_PROPOSAL_THRESHOLD } from "@/consts/index";
 import { Web3 } from "web3";
 import { keccak256, toUtf8Bytes, getAddress } from "ethers";
 import { useMyGovernor } from "@/utils/useMyGovernor";
@@ -192,7 +193,7 @@ export const useProposal = () => {
   };
 
   const canPropose = (walletBalance: number) => {
-    return walletBalance >= 1000;
+    return walletBalance >= MYGOVERNOR_PROPOSAL_THRESHOLD;
   };
 
   const cancelProposal = async (
