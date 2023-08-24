@@ -1,4 +1,5 @@
 import { useMyGovernor } from "@/utils/useMyGovernor";
+import { ref } from "vue";
 
 export const useVote = () => {
   const calVotesPercentage = async (proposalId: string, votes: number) => {
@@ -11,5 +12,23 @@ export const useVote = () => {
     return Number(((100 * votes) / quorum).toFixed(0));
   };
 
-  return { calVotesPercentage };
+  const canVote = ref(false);
+
+  const setCanVote = async (
+    proposalId: string,
+    walletAddress: string,
+    proposalStartAtBlock: number,
+    proposalState: string
+  ) => {
+    const { stateString, getVotes, hasVoted } = useMyGovernor();
+
+    const votes = await getVotes(walletAddress, proposalStartAtBlock);
+    const voted = await hasVoted(proposalId, walletAddress);
+
+    canVote.value = proposalState === stateString.active && votes > 0 && !voted;
+
+    return;
+  };
+
+  return { calVotesPercentage, canVote, setCanVote };
 };

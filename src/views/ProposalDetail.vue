@@ -39,7 +39,10 @@
         status="success"
         :width="200"
       >
-        <span>For {{ proposal.forVotes }}</span>
+        <div>For {{ proposal.forVotes }}</div>
+        <el-button type="success" round class="vote-button" v-if="canVote"
+          >Vote For</el-button
+        >
       </el-progress>
       <el-progress
         class="detail-frame2"
@@ -48,7 +51,10 @@
         status="exception"
         :width="200"
       >
-        <span>Against {{ proposal.againstVotes }}</span>
+        <div>Against {{ proposal.againstVotes }}</div>
+        <el-button type="danger" round class="vote-button" v-if="canVote"
+          >Vote Against</el-button
+        >
       </el-progress>
       <el-progress
         class="detail-frame2"
@@ -57,7 +63,10 @@
         status="warning"
         :width="200"
       >
-        <span>Abstain {{ proposal.abstainVotes }}</span>
+        <div>Abstain {{ proposal.abstainVotes }}</div>
+        <el-button type="warning" round class="vote-button" v-if="canVote"
+          >abstain your vote</el-button
+        >
       </el-progress>
     </div>
   </div>
@@ -132,7 +141,7 @@ const store = useStore();
 const walletAddress = computed(() => store.state.walletAddress);
 
 const { proposal, setProposal, canCancel, cancelProposal } = useProposal();
-const { calVotesPercentage } = useVote();
+const { calVotesPercentage, canVote, setCanVote } = useVote();
 const { stateString } = useMyGovernor();
 const route = useRoute();
 
@@ -209,6 +218,22 @@ onMounted(async () => {
   await setProposal(id.value);
   actionCount.value = proposal.calldataDescs.length;
   await calVotes();
+  setCanVote(
+    proposal.proposalId,
+    walletAddress.value,
+    proposal.voteStart,
+    proposal.state
+  );
+  store.subscribe((mutation, state) => {
+    if (mutation.type === "setWalletAddress") {
+      setCanVote(
+        proposal.proposalId,
+        state.walletAddress,
+        proposal.voteStart,
+        proposal.state
+      );
+    }
+  });
 });
 </script>
 
@@ -238,5 +263,8 @@ onMounted(async () => {
 }
 .detail-overview {
   margin-bottom: 20px;
+}
+.vote-button {
+  margin-top: 10px;
 }
 </style>

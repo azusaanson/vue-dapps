@@ -131,6 +131,32 @@ export const useMyGovernor = () => {
     };
   };
 
+  const getVotes = async (account: string, timepoint: number) => {
+    const myGovernorContract = contract();
+
+    const weight = await myGovernorContract
+      .getVotes(account, timepoint)
+      .catch((err) => {
+        console.error(err);
+        return BigInt(0);
+      });
+
+    return weight;
+  };
+
+  const hasVoted = async (proposalId: string, account: string) => {
+    const myGovernorContract = contract();
+
+    const voted = await myGovernorContract
+      .hasVoted(proposalId, account)
+      .catch((err) => {
+        console.error(err);
+        return true;
+      });
+
+    return voted;
+  };
+
   const contractSigner = async () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
@@ -241,6 +267,8 @@ export const useMyGovernor = () => {
     getProposalDetail,
     getProposalVotes,
     getQuorumOfProposal,
+    getVotes,
+    hasVoted,
     proposeRes,
     propose,
     cancel,

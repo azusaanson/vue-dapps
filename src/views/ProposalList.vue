@@ -42,14 +42,14 @@ import { toDate, shortHash } from "@/utils/useCommon";
 import { useStore } from "vuex";
 
 const store = useStore();
-const walletBalance = computed(() => store.state.walletBalance);
+const walletAddress = computed(() => store.state.walletAddress);
 
-const { getProposalList, canPropose } = useProposal();
+const { getProposalList, canPropose, setCanPropose } = useProposal();
 
 const proposalList = ref<ListProposal[]>([]);
 const proposalListErrors = ref<string[]>([]);
 
-const isProposeDisabled = computed(() => !canPropose(walletBalance.value));
+const isProposeDisabled = computed(() => !canPropose.value);
 
 const setProposalList = () => {
   getProposalList().then((res) => {
@@ -63,6 +63,12 @@ const setProposalList = () => {
 
 onMounted(() => {
   setProposalList();
+  setCanPropose(walletAddress.value);
+  store.subscribe((mutation, state) => {
+    if (mutation.type === "setWalletAddress") {
+      setCanPropose(state.walletAddress);
+    }
+  });
 });
 </script>
 

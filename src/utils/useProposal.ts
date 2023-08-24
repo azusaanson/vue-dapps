@@ -2,12 +2,13 @@ import { MYGOVERNOR_PROPOSAL_THRESHOLD } from "@/consts/index";
 import { Web3 } from "web3";
 import { keccak256, toUtf8Bytes, getAddress } from "ethers";
 import { useMyGovernor } from "@/utils/useMyGovernor";
+import { useMyToken } from "@/utils/useMyToken";
 import {
   useDB,
   ProposalRecordInput,
   ProposalRecordOutput,
 } from "@/utils/useDB";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 
 export interface Proposal {
   id: string;
@@ -192,8 +193,18 @@ export const useProposal = () => {
     return [];
   };
 
-  const canPropose = (walletBalance: number) => {
-    return walletBalance >= MYGOVERNOR_PROPOSAL_THRESHOLD;
+  const canPropose = ref(false);
+
+  const setCanPropose = async (walletAddress: string) => {
+    const { getVotes } = useMyGovernor();
+    const { getBlock } = useMyToken();
+
+    const blockNow = await getBlock();
+    const votes = await getVotes(walletAddress, blockNow - 1);
+
+    canPropose.value = votes >= MYGOVERNOR_PROPOSAL_THRESHOLD;
+
+    return;
   };
 
   const cancelProposal = async (
@@ -242,6 +253,7 @@ export const useProposal = () => {
     createProposalRes,
     createProposal,
     canPropose,
+    setCanPropose,
     cancelProposal,
     canCancel,
   };

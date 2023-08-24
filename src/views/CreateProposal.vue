@@ -146,16 +146,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { isAddress } from "web3-validator";
 import { useProposal } from "@/utils/useProposal";
 import { useMyToken } from "@/utils/useMyToken";
 import { useStore } from "vuex";
 
 const store = useStore();
-const walletBalance = computed(() => store.state.walletBalance);
+const walletAddress = computed(() => store.state.walletAddress);
 
-const { createProposalRes, createProposal, canPropose } = useProposal();
+const { createProposalRes, createProposal, canPropose, setCanPropose } =
+  useProposal();
 const {
   myTokenFuncType,
   encodeTransfer,
@@ -212,10 +213,9 @@ const haveUintParam = computed(
     selectedFunc.value === myTokenFuncType.mint ||
     selectedFunc.value === myTokenFuncType.burn
 );
-const isCanPropose = computed(() => canPropose(walletBalance.value));
 const isProposeDisabled = computed(() => {
   if (
-    !isCanPropose.value ||
+    !canPropose.value ||
     isTitleInvalid() ||
     isOverviewInvalid() ||
     isAddingAction.value ||
@@ -334,6 +334,15 @@ const propose = () => {
   });
   isAfterCreate.value = true;
 };
+
+onMounted(() => {
+  setCanPropose(walletAddress.value);
+  store.subscribe((mutation, state) => {
+    if (mutation.type === "setWalletAddress") {
+      setCanPropose(state.walletAddress);
+    }
+  });
+});
 </script>
 
 <style>
