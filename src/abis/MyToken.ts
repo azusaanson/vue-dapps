@@ -58,7 +58,6 @@ export interface MyTokenInterface extends Interface {
       | "getVotes"
       | "governor"
       | "increaseAllowance"
-      | "initialSupply"
       | "mint"
       | "name"
       | "nonces"
@@ -156,10 +155,6 @@ export interface MyTokenInterface extends Interface {
     functionFragment: "increaseAllowance",
     values: [AddressLike, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "initialSupply",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "mint", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "nonces", values: [AddressLike]): string;
@@ -243,10 +238,6 @@ export interface MyTokenInterface extends Interface {
   decodeFunctionResult(functionFragment: "governor", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "increaseAllowance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "initialSupply",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -507,8 +498,6 @@ export interface MyToken extends BaseContract {
     "nonpayable"
   >;
 
-  initialSupply: TypedContractMethod<[], [bigint], "view">;
-
   mint: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   name: TypedContractMethod<[], [string], "view">;
@@ -676,9 +665,6 @@ export interface MyToken extends BaseContract {
     [boolean],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "initialSupply"
-  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;

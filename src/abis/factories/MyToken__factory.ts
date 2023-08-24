@@ -556,19 +556,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "initialSupply",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "uint256",
