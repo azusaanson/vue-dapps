@@ -1,8 +1,17 @@
 <template>
   <div class="proposal-list-header">
     <span>Proposals</span>
-    <router-link to="/propose"
-      ><el-button round type="primary">Propose</el-button></router-link
+    <router-link to="/propose" v-if="!isProposeDisabled"
+      ><el-button round type="primary" :disabled="isProposeDisabled"
+        >Propose</el-button
+      ></router-link
+    >
+    <el-button
+      round
+      type="primary"
+      :disabled="isProposeDisabled"
+      v-if="isProposeDisabled"
+      >Propose</el-button
     >
   </div>
   <div v-if="proposalListErrors.length > 0">
@@ -27,14 +36,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useProposal, ListProposal } from "@/utils/useProposal";
 import { toDate, shortHash } from "@/utils/useCommon";
+import { useStore } from "vuex";
 
-const { getProposalList } = useProposal();
+const store = useStore();
+const walletBalance = computed(() => store.state.walletBalance);
+
+const { getProposalList, canPropose } = useProposal();
 
 const proposalList = ref<ListProposal[]>([]);
 const proposalListErrors = ref<string[]>([]);
+
+const isProposeDisabled = computed(() => !canPropose(walletBalance.value));
 
 const setProposalList = () => {
   getProposalList().then((res) => {

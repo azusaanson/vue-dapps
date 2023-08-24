@@ -150,8 +150,12 @@ import { ref, computed } from "vue";
 import { isAddress } from "web3-validator";
 import { useProposal } from "@/utils/useProposal";
 import { useMyToken } from "@/utils/useMyToken";
+import { useStore } from "vuex";
 
-const { createProposalRes, createProposal } = useProposal();
+const store = useStore();
+const walletBalance = computed(() => store.state.walletBalance);
+
+const { createProposalRes, createProposal, canPropose } = useProposal();
 const {
   myTokenFuncType,
   encodeTransfer,
@@ -208,8 +212,10 @@ const haveUintParam = computed(
     selectedFunc.value === myTokenFuncType.mint ||
     selectedFunc.value === myTokenFuncType.burn
 );
+const isCanPropose = computed(() => canPropose(walletBalance.value));
 const isProposeDisabled = computed(() => {
   if (
+    !isCanPropose.value ||
     isTitleInvalid() ||
     isOverviewInvalid() ||
     isAddingAction.value ||

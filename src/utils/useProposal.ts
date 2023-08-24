@@ -191,6 +191,10 @@ export const useProposal = () => {
     return [];
   };
 
+  const canPropose = (walletBalance: number) => {
+    return walletBalance >= 1000;
+  };
+
   const cancelProposal = async (
     targetContractAddrs: string[],
     ethValues: number[],
@@ -236,6 +240,7 @@ export const useProposal = () => {
     setProposal,
     createProposalRes,
     createProposal,
+    canPropose,
     cancelProposal,
     canCancel,
   };

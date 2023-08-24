@@ -56,6 +56,7 @@ const getAccountAndBalance = () => {
 
       getBalance(walletAddress.value).then((balanceRes) => {
         balance.value = Number(balanceRes);
+        store.commit("setWalletBalance", Number(balanceRes));
       });
     }
   });
