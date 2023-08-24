@@ -7,7 +7,13 @@ import type { MyToken, MyTokenInterface } from "../MyToken";
 
 const _abi = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "governorAddress",
+        type: "address",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "constructor",
   },
