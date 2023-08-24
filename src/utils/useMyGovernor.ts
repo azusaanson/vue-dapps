@@ -16,6 +16,14 @@ export interface ProposeRes {
   title: string;
 }
 
+export interface CastVoteRes {
+  voter: string;
+  proposalId: string;
+  voteType: string;
+  weight: number;
+  reason: string;
+}
+
 export const useMyGovernor = () => {
   const contract = () => {
     const provider = new ethers.BrowserProvider(
@@ -54,6 +62,25 @@ export const useMyGovernor = () => {
         return stateString.expired;
       case 7:
         return stateString.executed;
+      default:
+        return "";
+    }
+  };
+
+  const voteTypeNum = {
+    against: 0,
+    for: 1,
+    abstain: 2,
+  };
+
+  const toVoteTypeString = (num: number) => {
+    switch (num) {
+      case voteTypeNum.against:
+        return "Against";
+      case voteTypeNum.for:
+        return "For";
+      case voteTypeNum.abstain:
+        return "Abstain";
       default:
         return "";
     }
@@ -262,8 +289,51 @@ export const useMyGovernor = () => {
     return { proposalIdRes, errors };
   };
 
+  const castVoteRes = reactive<CastVoteRes>({
+    voter: "",
+    proposalId: "0",
+    voteType: "",
+    weight: 0,
+    reason: "",
+  });
+
+  const castVote = async (proposalId: string, voteType: number) => {
+    const errors: string[] = [];
+    const myGovernorContractSigner = await contractSigner();
+
+    const txResponse = await myGovernorContractSigner
+      .castVote(proposalId, voteType)
+      .catch((err) => {
+        console.error(err);
+        errors.push(err);
+      })
+      .then();
+    if (!txResponse) {
+      return errors;
+    }
+
+    const txReceipt = await txResponse.wait();
+    if (txReceipt) {
+      if (txReceipt.logs[0] instanceof EventLog) {
+        const { voter, proposalId, support, weight, reason } =
+          txReceipt.logs[0].args;
+
+        Object.assign(castVoteRes, {
+          voter: String(voter),
+          proposalId: String(proposalId),
+          voteType: toVoteTypeString(Number(support)),
+          weight: Number(weight),
+          reason: String(reason),
+        });
+      }
+    }
+
+    return errors;
+  };
+
   return {
     stateString,
+    voteTypeNum,
     getProposalDetail,
     getProposalVotes,
     getQuorumOfProposal,
@@ -272,5 +342,7 @@ export const useMyGovernor = () => {
     proposeRes,
     propose,
     cancel,
+    castVoteRes,
+    castVote,
   };
 };

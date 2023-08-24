@@ -40,7 +40,12 @@
         :width="200"
       >
         <div>For {{ proposal.forVotes }}</div>
-        <el-button type="success" round class="vote-button" v-if="canVote"
+        <el-button
+          type="success"
+          round
+          class="vote-button"
+          v-if="canVote"
+          @click="showConfirmVoteForDialog = true"
           >Vote For</el-button
         >
       </el-progress>
@@ -52,7 +57,12 @@
         :width="200"
       >
         <div>Against {{ proposal.againstVotes }}</div>
-        <el-button type="danger" round class="vote-button" v-if="canVote"
+        <el-button
+          type="danger"
+          round
+          class="vote-button"
+          v-if="canVote"
+          @click="showConfirmVoteAgainstDialog = true"
           >Vote Against</el-button
         >
       </el-progress>
@@ -64,7 +74,12 @@
         :width="200"
       >
         <div>Abstain {{ proposal.abstainVotes }}</div>
-        <el-button type="warning" round class="vote-button" v-if="canVote"
+        <el-button
+          type="warning"
+          round
+          class="vote-button"
+          v-if="canVote"
+          @click="showConfirmVoteAbstainDialog = true"
           >abstain your vote</el-button
         >
       </el-progress>
@@ -126,6 +141,102 @@
       </span>
     </template>
   </el-dialog>
+  <el-dialog
+    v-model="showConfirmVoteForDialog"
+    title="Vote For Proposal"
+    width="30%"
+  >
+    <span>{{ proposal.title }}</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showConfirmVoteForDialog = false" round
+          >Cancel</el-button
+        >
+        <el-button
+          type="primary"
+          @click="
+            showConfirmVoteForDialog = false;
+            voteFor();
+          "
+          round
+        >
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog
+    v-model="showConfirmVoteAgainstDialog"
+    title="Vote Against Proposal"
+    width="30%"
+  >
+    <span>{{ proposal.title }}</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showConfirmVoteAgainstDialog = false" round
+          >Cancel</el-button
+        >
+        <el-button
+          type="primary"
+          @click="
+            showConfirmVoteAgainstDialog = false;
+            voteAgainst();
+          "
+          round
+        >
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog
+    v-model="showConfirmVoteAbstainDialog"
+    title="Abstain Your Vote"
+    width="30%"
+  >
+    <span>{{ proposal.title }}</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showConfirmVoteAbstainDialog = false" round
+          >Cancel</el-button
+        >
+        <el-button
+          type="primary"
+          @click="
+            showConfirmVoteAbstainDialog = false;
+            voteAbstain();
+          "
+          round
+        >
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog
+    v-model="isVoteSucceed"
+    title="Vote Succeed!"
+    width="50%"
+    @close="reloadPage"
+  >
+    <div>
+      {{ voteRes.voter }} voted {{ voteRes.weight }} {{ voteRes.voteType }} to
+      {{ proposal.title }} (id: {{ voteRes.proposalId }})
+    </div>
+  </el-dialog>
+  <el-dialog
+    v-model="isCancelSucceed"
+    title="Cancel Succeed!"
+    width="50%"
+    @close="reloadPage"
+  >
+    <div>
+      Canceled proposal {{ proposal.title }} (id: {{ cancaledProposalId }})
+    </div>
+  </el-dialog>
+  <el-dialog v-model="isFailed" title="Failed!" width="50%">
+    <span>{{ errors }}</span>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -141,9 +252,13 @@ const store = useStore();
 const walletAddress = computed(() => store.state.walletAddress);
 
 const { proposal, setProposal, canCancel, cancelProposal } = useProposal();
-const { calVotesPercentage, canVote, setCanVote } = useVote();
-const { stateString } = useMyGovernor();
+const { calVotesPercentage, canVote, setCanVote, voteRes, vote } = useVote();
+const { stateString, voteTypeNum } = useMyGovernor();
 const route = useRoute();
+
+const reloadPage = () => {
+  location.reload();
+};
 
 const id = ref("");
 const actionCount = ref(0);
@@ -153,6 +268,9 @@ const abstainPercentage = ref(0);
 const errors = ref<string[]>([]);
 const cancaledProposalId = ref("");
 const showConfirmCancelDialog = ref(false);
+const showConfirmVoteForDialog = ref(false);
+const showConfirmVoteAgainstDialog = ref(false);
+const showConfirmVoteAbstainDialog = ref(false);
 
 const createdAtDate = computed(() => toDate(proposal.createdAt));
 const shortProposalId = computed(() => shortHash(proposal.proposalId));
@@ -180,6 +298,11 @@ const stateTagType = computed(() => {
       return "";
   }
 });
+const isVoteSucceed = computed(
+  () => voteRes.proposalId != "0" && voteRes.proposalId != ""
+);
+const isCancelSucceed = computed(() => cancaledProposalId.value != "");
+const isFailed = computed(() => errors.value.length > 0);
 
 const calVotes = async () => {
   const forPer = await calVotesPercentage(
@@ -210,6 +333,30 @@ const cancel = () => {
       return;
     }
     cancaledProposalId.value = res.proposalId;
+  });
+};
+const voteFor = () => {
+  vote(proposal.proposalId, voteTypeNum.for).then((errorsRes) => {
+    if (errorsRes.length > 0) {
+      errors.value = errorsRes;
+      return;
+    }
+  });
+};
+const voteAgainst = () => {
+  vote(proposal.proposalId, voteTypeNum.against).then((errorsRes) => {
+    if (errorsRes.length > 0) {
+      errors.value = errorsRes;
+      return;
+    }
+  });
+};
+const voteAbstain = () => {
+  vote(proposal.proposalId, voteTypeNum.abstain).then((errorsRes) => {
+    if (errorsRes.length > 0) {
+      errors.value = errorsRes;
+      return;
+    }
   });
 };
 

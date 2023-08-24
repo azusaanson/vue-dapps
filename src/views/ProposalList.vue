@@ -18,7 +18,7 @@
     Errors: {{ proposalListErrors }}
   </div>
 
-  <el-row v-for="proposal in proposalList" :key="proposal.createdAt"
+  <el-row v-for="proposal in sortedProposalList" :key="proposal.id"
     ><router-link class="proposal-list-frame" :to="`/proposal/${proposal.id}`">
       <el-button link>
         <el-col :span="24" class="proposal-list-frame2">
@@ -50,6 +50,11 @@ const proposalList = ref<ListProposal[]>([]);
 const proposalListErrors = ref<string[]>([]);
 
 const isProposeDisabled = computed(() => !canPropose.value);
+const sortedProposalList = computed(() => {
+  return [...proposalList.value].sort(
+    (a, b) => b["createdAt"] - a["createdAt"]
+  );
+});
 
 const setProposalList = () => {
   getProposalList().then((res) => {

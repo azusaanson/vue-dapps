@@ -92,19 +92,13 @@
       <el-button
         round
         type="primary"
-        v-loading="isCreating"
+        v-loading.fullscreen.lock="isCreating"
         :disabled="isProposeDisabled || isCreating"
         @click="showConfirmProposeDialog = true"
         >Propose</el-button
       >
       <router-link to="/" class="margin-left"
-        ><el-button
-          round
-          type="danger"
-          :disabled="isCreating"
-          v-loading="isCreating"
-          >Cancel</el-button
-        ></router-link
+        ><el-button round type="danger">Cancel</el-button></router-link
       >
     </div>
   </div>
@@ -133,7 +127,12 @@
       </span>
     </template>
   </el-dialog>
-  <el-dialog v-model="isCreateSucceed" title="Propose Succeed!" width="50%">
+  <el-dialog
+    v-model="isCreateSucceed"
+    title="Propose Succeed!"
+    width="50%"
+    @close="redirectTodetail"
+  >
     <div>proposal id: {{ createProposalRes.proposalId }}</div>
     <div>title: {{ createProposalRes.title }}</div>
     <div>vote start at: block #{{ createProposalRes.voteStart }}</div>
@@ -151,6 +150,7 @@ import { isAddress } from "web3-validator";
 import { useProposal } from "@/utils/useProposal";
 import { useMyToken } from "@/utils/useMyToken";
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 
 const store = useStore();
 const walletAddress = computed(() => store.state.walletAddress);
@@ -164,6 +164,11 @@ const {
   encodeMint,
   encodeBurn,
 } = useMyToken();
+
+const router = useRouter();
+const redirectTodetail = () => {
+  router.push("/proposal/" + createProposalRes.firebaseID);
+};
 
 const title = ref<string>("");
 const overview = ref<string>("");
