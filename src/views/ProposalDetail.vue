@@ -306,7 +306,6 @@ import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
-import { exec } from "child_process";
 
 const store = useStore();
 const walletAddress = computed(() => store.state.walletAddress);
