@@ -242,7 +242,7 @@
 <script setup lang="ts">
 import { useProposal } from "@/utils/useProposal";
 import { useVote } from "@/utils/useVote";
-import { useMyGovernor } from "@/utils/useMyGovernor";
+import { stateString, voteTypeNum } from "@/utils/useMyGovernor";
 import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
@@ -253,7 +253,6 @@ const walletAddress = computed(() => store.state.walletAddress);
 
 const { proposal, setProposal, canCancel, cancelProposal } = useProposal();
 const { calVotesPercentage, canVote, setCanVote, voteRes, vote } = useVote();
-const { stateString, voteTypeNum } = useMyGovernor();
 const route = useRoute();
 
 const reloadPage = () => {

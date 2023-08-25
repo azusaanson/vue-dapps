@@ -1,13 +1,13 @@
 import { MYGOVERNOR_PROPOSAL_THRESHOLD } from "@/consts/index";
 import { Web3 } from "web3";
 import { keccak256, toUtf8Bytes, getAddress } from "ethers";
-import { useMyGovernor } from "@/utils/useMyGovernor";
-import { useMyToken } from "@/utils/useMyToken";
 import {
-  useDB,
-  ProposalRecordInput,
-  ProposalRecordOutput,
-} from "@/utils/useDB";
+  useViewMyGovernor,
+  useSignMyGovernor,
+  stateString,
+} from "@/utils/useMyGovernor";
+import { useMyToken } from "@/utils/useMyToken";
+import { useDB, ProposalRecordReq, ProposalRecordRes } from "@/utils/useDB";
 import { reactive, ref } from "vue";
 
 export interface Proposal {
@@ -44,25 +44,25 @@ export interface CreateProposalRes {
   firebaseID: string;
 }
 
+export const toDescriptionHash = (title: string) => {
+  return keccak256(toUtf8Bytes(title));
+};
+
+export const toProposalId = (
+  targetContractAddrs: string[],
+  ethValues: number[],
+  calldatas: string[],
+  title: string
+) => {
+  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+
+  return web3.eth.abi.encodeParameters(
+    ["address[]", "uint256[]", "bytes[]", "bytes32"],
+    [targetContractAddrs, ethValues, calldatas, toDescriptionHash(title)]
+  );
+};
+
 export const useProposal = () => {
-  const toDescriptionHash = (title: string) => {
-    return keccak256(toUtf8Bytes(title));
-  };
-
-  const toProposalId = (
-    targetContractAddrs: string[],
-    ethValues: number[],
-    calldatas: string[],
-    title: string
-  ) => {
-    const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
-
-    return web3.eth.abi.encodeParameters(
-      ["address[]", "uint256[]", "bytes[]", "bytes32"],
-      [targetContractAddrs, ethValues, calldatas, toDescriptionHash(title)]
-    );
-  };
-
   const getProposalList = async () => {
     const proposalListRes: ListProposal[] = [];
 
@@ -73,7 +73,7 @@ export const useProposal = () => {
       return { proposalListRes, errors: dbRes.errors };
     }
 
-    dbRes.records.forEach(async (record: ProposalRecordOutput) => {
+    dbRes.records.forEach(async (record: ProposalRecordRes) => {
       proposalListRes.push({
         id: record.id,
         proposalId: record.proposal_id,
@@ -106,25 +106,23 @@ export const useProposal = () => {
 
   const setProposal = async (id: string) => {
     // from firebase
-    const { proposalRecordOutput, setProposalRecord } = useDB();
+    const { proposalRecordRes, setProposalRecord } = useDB();
 
     await setProposalRecord(id);
 
     // from blockchain
-    const { getProposalDetail, getProposalVotes } = useMyGovernor();
+    const { getProposalDetail, getProposalVotes } = useViewMyGovernor();
 
     const proposalDetail = await getProposalDetail(
-      proposalRecordOutput.proposal_id
+      proposalRecordRes.proposal_id
     );
 
-    const proposalVotes = await getProposalVotes(
-      proposalRecordOutput.proposal_id
-    );
+    const proposalVotes = await getProposalVotes(proposalRecordRes.proposal_id);
 
     Object.assign(proposal, {
-      id: proposalRecordOutput.id,
-      proposalId: proposalRecordOutput.proposal_id,
-      title: proposalRecordOutput.title,
+      id: proposalRecordRes.id,
+      proposalId: proposalRecordRes.proposal_id,
+      title: proposalRecordRes.title,
       state: proposalDetail.stateString,
       voteStart: proposalDetail.snapshot,
       voteEnd: proposalDetail.deadline,
@@ -132,12 +130,12 @@ export const useProposal = () => {
       forVotes: proposalVotes.for,
       abstainVotes: proposalVotes.abstain,
       proposer: proposalDetail.proposer,
-      overview: proposalRecordOutput.overview,
-      targetContractAddrs: proposalRecordOutput.target_contract_addresses,
-      calldatas: proposalRecordOutput.call_datas,
-      calldataDescs: proposalRecordOutput.call_data_descriptions,
-      ethValues: proposalRecordOutput.eth_values,
-      createdAt: proposalRecordOutput.created_at,
+      overview: proposalRecordRes.overview,
+      targetContractAddrs: proposalRecordRes.target_contract_addresses,
+      calldatas: proposalRecordRes.call_datas,
+      calldataDescs: proposalRecordRes.call_data_descriptions,
+      ethValues: proposalRecordRes.eth_values,
+      createdAt: proposalRecordRes.created_at,
     });
   };
 
@@ -156,7 +154,7 @@ export const useProposal = () => {
     callDataDescs: string[]
   ) => {
     // create proposal in contract
-    const { proposeRes, propose } = useMyGovernor();
+    const { proposeRes, propose } = useSignMyGovernor();
 
     const proposeErrs = await propose(encodedCalldatas, title);
     if (proposeErrs.length > 0) {
@@ -164,7 +162,7 @@ export const useProposal = () => {
     }
 
     // create record in firebase db
-    const newProposalRecord: ProposalRecordInput = {
+    const newProposalRecord: ProposalRecordReq = {
       proposal_id: proposeRes.proposalId,
       title: title,
       overview: overview,
@@ -196,7 +194,7 @@ export const useProposal = () => {
   const canPropose = ref(false);
 
   const setCanPropose = async (walletAddress: string) => {
-    const { getVotes } = useMyGovernor();
+    const { getVotes } = useViewMyGovernor();
     const { getBlock } = useMyToken();
 
     const blockNow = await getBlock();
@@ -213,7 +211,7 @@ export const useProposal = () => {
     encodedCalldatas: string[],
     title: string
   ) => {
-    const { cancel } = useMyGovernor();
+    const { cancel } = useSignMyGovernor();
 
     const cancelRes = await cancel(
       targetContractAddrs,
@@ -232,8 +230,6 @@ export const useProposal = () => {
     proposer: string,
     walletAddress: string
   ) => {
-    const { stateString } = useMyGovernor();
-
     if (
       walletAddress &&
       state === stateString.pending &&
@@ -246,7 +242,6 @@ export const useProposal = () => {
   };
 
   return {
-    toProposalId,
     getProposalList,
     proposal,
     setProposal,

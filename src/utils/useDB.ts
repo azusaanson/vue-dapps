@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { reactive } from "vue";
 
-export interface ProposalRecordInput {
+export interface ProposalRecordReq {
   proposal_id: string;
   title: string;
   overview: string;
@@ -21,7 +21,7 @@ export interface ProposalRecordInput {
   created_at: number;
 }
 
-export interface ProposalRecordOutput {
+export interface ProposalRecordRes {
   id: string;
   proposal_id: string;
   title: string;
@@ -39,7 +39,7 @@ export const useDB = () => {
 
   const getProposalRecordList = async () => {
     const errors: string[] = [];
-    const records: ProposalRecordOutput[] = [];
+    const records: ProposalRecordRes[] = [];
 
     const querySnapshot = await getDocs(collection(db, "proposal")).catch(
       (err) => {
@@ -56,7 +56,7 @@ export const useDB = () => {
     }
 
     querySnapshot.forEach((doc) => {
-      const record: ProposalRecordOutput = {
+      const record: ProposalRecordRes = {
         id: doc.id,
         proposal_id: doc.data().proposal_id,
         title: doc.data().title,
@@ -73,7 +73,7 @@ export const useDB = () => {
     return { records, errors };
   };
 
-  const proposalRecordOutput = reactive<ProposalRecordOutput>({
+  const proposalRecordRes = reactive<ProposalRecordRes>({
     id: "",
     proposal_id: "",
     title: "",
@@ -90,7 +90,7 @@ export const useDB = () => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      Object.assign(proposalRecordOutput, {
+      Object.assign(proposalRecordRes, {
         id: docSnap.id,
         proposal_id: docSnap.data().proposal_id,
         title: docSnap.data().title,
@@ -104,7 +104,7 @@ export const useDB = () => {
     }
   };
 
-  const createProposalRecord = async (newProposal: ProposalRecordInput) => {
+  const createProposalRecord = async (newProposal: ProposalRecordReq) => {
     const errors: string[] = [];
 
     const docRef = await addDoc(collection(db, "proposal"), newProposal).catch(
@@ -126,7 +126,7 @@ export const useDB = () => {
 
   return {
     getProposalRecordList,
-    proposalRecordOutput,
+    proposalRecordRes,
     setProposalRecord,
     createProposalRecord,
   };

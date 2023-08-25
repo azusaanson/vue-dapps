@@ -1,4 +1,8 @@
-import { useMyGovernor } from "@/utils/useMyGovernor";
+import {
+  useViewMyGovernor,
+  useSignMyGovernor,
+  stateString,
+} from "@/utils/useMyGovernor";
 import { ref, reactive } from "vue";
 
 export interface VoteRes {
@@ -10,7 +14,7 @@ export interface VoteRes {
 
 export const useVote = () => {
   const calVotesPercentage = async (proposalId: string, votes: number) => {
-    const { getQuorumOfProposal } = useMyGovernor();
+    const { getQuorumOfProposal } = useViewMyGovernor();
     const quorum = await getQuorumOfProposal(proposalId);
     if (quorum == 0) {
       return 0;
@@ -27,7 +31,7 @@ export const useVote = () => {
     proposalStartAtBlock: number,
     proposalState: string
   ) => {
-    const { stateString, getVotes, hasVoted } = useMyGovernor();
+    const { getVotes, hasVoted } = useViewMyGovernor();
 
     if (proposalState !== stateString.active) {
       canVote.value = false;
@@ -49,7 +53,7 @@ export const useVote = () => {
   });
 
   const vote = async (proposalId: string, voteType: number) => {
-    const { castVoteRes, castVote } = useMyGovernor();
+    const { castVoteRes, castVote } = useSignMyGovernor();
 
     const proposeErrs = await castVote(proposalId, voteType);
     if (proposeErrs.length > 0) {
@@ -66,5 +70,11 @@ export const useVote = () => {
     return [];
   };
 
-  return { calVotesPercentage, canVote, setCanVote, voteRes, vote };
+  return {
+    calVotesPercentage,
+    canVote,
+    setCanVote,
+    voteRes,
+    vote,
+  };
 };

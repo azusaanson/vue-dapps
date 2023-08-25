@@ -148,7 +148,7 @@
 import { ref, computed, onMounted } from "vue";
 import { isAddress } from "web3-validator";
 import { useProposal } from "@/utils/useProposal";
-import { useMyToken } from "@/utils/useMyToken";
+import { useMyToken, myTokenFuncType } from "@/utils/useMyToken";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
@@ -157,13 +157,8 @@ const walletAddress = computed(() => store.state.walletAddress);
 
 const { createProposalRes, createProposal, canPropose, setCanPropose } =
   useProposal();
-const {
-  myTokenFuncType,
-  encodeTransfer,
-  encodeUpdateGovernor,
-  encodeMint,
-  encodeBurn,
-} = useMyToken();
+const { encodeTransfer, encodeUpdateGovernor, encodeMint, encodeBurn } =
+  useMyToken();
 
 const router = useRouter();
 const redirectTodetail = () => {

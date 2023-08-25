@@ -24,66 +24,66 @@ export interface CastVoteRes {
   reason: string;
 }
 
-export const useMyGovernor = () => {
+export const stateString = {
+  pending: "Pending",
+  active: "Active",
+  canceled: "Canceled",
+  defeated: "Defeated",
+  succeeded: "Succeeded",
+  queued: "Queued",
+  expired: "Expired",
+  executed: "Executed",
+};
+
+export const voteTypeNum = {
+  against: 0,
+  for: 1,
+  abstain: 2,
+};
+
+const toStateString = (stateInt: number) => {
+  switch (stateInt) {
+    case 0:
+      return stateString.pending;
+    case 1:
+      return stateString.active;
+    case 2:
+      return stateString.canceled;
+    case 3:
+      return stateString.defeated;
+    case 4:
+      return stateString.succeeded;
+    case 5:
+      return stateString.queued;
+    case 6:
+      return stateString.expired;
+    case 7:
+      return stateString.executed;
+    default:
+      return "";
+  }
+};
+
+const toVoteTypeString = (num: number) => {
+  switch (num) {
+    case voteTypeNum.against:
+      return "Against";
+    case voteTypeNum.for:
+      return "For";
+    case voteTypeNum.abstain:
+      return "Abstain";
+    default:
+      return "";
+  }
+};
+
+export const useViewMyGovernor = () => {
   const contract = () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
     );
 
     return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, provider);
-  };
-
-  const stateString = {
-    pending: "Pending",
-    active: "Active",
-    canceled: "Canceled",
-    defeated: "Defeated",
-    succeeded: "Succeeded",
-    queued: "Queued",
-    expired: "Expired",
-    executed: "Executed",
-  };
-
-  const toStateString = (stateInt: number) => {
-    switch (stateInt) {
-      case 0:
-        return stateString.pending;
-      case 1:
-        return stateString.active;
-      case 2:
-        return stateString.canceled;
-      case 3:
-        return stateString.defeated;
-      case 4:
-        return stateString.succeeded;
-      case 5:
-        return stateString.queued;
-      case 6:
-        return stateString.expired;
-      case 7:
-        return stateString.executed;
-      default:
-        return "";
-    }
-  };
-
-  const voteTypeNum = {
-    against: 0,
-    for: 1,
-    abstain: 2,
-  };
-
-  const toVoteTypeString = (num: number) => {
-    switch (num) {
-      case voteTypeNum.against:
-        return "Against";
-      case voteTypeNum.for:
-        return "For";
-      case voteTypeNum.abstain:
-        return "Abstain";
-      default:
-        return "";
-    }
   };
 
   const getProposalDetail = async (proposalId: string) => {
@@ -184,6 +184,16 @@ export const useMyGovernor = () => {
     return voted;
   };
 
+  return {
+    getProposalDetail,
+    getProposalVotes,
+    getQuorumOfProposal,
+    getVotes,
+    hasVoted,
+  };
+};
+
+export const useSignMyGovernor = () => {
   const contractSigner = async () => {
     const provider = new ethers.BrowserProvider(
       window.ethereum as Eip1193Provider
@@ -332,13 +342,6 @@ export const useMyGovernor = () => {
   };
 
   return {
-    stateString,
-    voteTypeNum,
-    getProposalDetail,
-    getProposalVotes,
-    getQuorumOfProposal,
-    getVotes,
-    hasVoted,
     proposeRes,
     propose,
     cancel,

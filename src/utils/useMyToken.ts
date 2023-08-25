@@ -2,6 +2,13 @@ import { MYTOKEN_ADDRESS } from "@/consts/index";
 import { MyToken__factory } from "@/abis/index";
 import { ethers, Eip1193Provider } from "ethers";
 
+export const myTokenFuncType = {
+  transfer: "transfer",
+  updateGovernor: "updateGovernor",
+  mint: "mint",
+  burn: "burn",
+};
+
 export const useMyToken = () => {
   const contract = () => {
     const provider = new ethers.BrowserProvider(
@@ -33,13 +40,6 @@ export const useMyToken = () => {
     return Number(block);
   };
 
-  const myTokenFuncType = {
-    transfer: "transfer",
-    updateGovernor: "updateGovernor",
-    mint: "mint",
-    burn: "burn",
-  };
-
   const encodeTransfer = (toAddr: string, amount: number) => {
     return contract().interface.encodeFunctionData("transfer", [
       toAddr,
@@ -64,7 +64,6 @@ export const useMyToken = () => {
   return {
     getBalance,
     getBlock,
-    myTokenFuncType,
     encodeTransfer,
     encodeUpdateGovernor,
     encodeMint,
