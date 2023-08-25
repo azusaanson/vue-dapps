@@ -127,6 +127,7 @@
       </span>
     </template>
   </el-dialog>
+
   <el-dialog
     v-model="isCreateSucceed"
     title="Propose Succeed!"
@@ -139,6 +140,7 @@
     <div>vote end at: block #{{ createProposalRes.voteEnd }}</div>
     <div>firebase id: {{ createProposalRes.firebaseID }}</div>
   </el-dialog>
+
   <el-dialog v-model="isCreateFailed" title="Propose Failed!" width="50%">
     <span>{{ createErrors }}</span>
   </el-dialog>

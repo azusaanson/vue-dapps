@@ -10,6 +10,14 @@
       @click="showConfirmCancelDialog = true"
       >Cancel</el-button
     >
+    <el-button
+      type="primary"
+      round
+      class="detail-frame3"
+      v-if="canProposalExecute"
+      @click="showConfirmExecuteDialog = true"
+      >Execute</el-button
+    >
     <el-tooltip
       :content="proposal.proposalId"
       placement="bottom"
@@ -141,6 +149,37 @@
       </span>
     </template>
   </el-dialog>
+
+  <el-dialog
+    v-model="showConfirmExecuteDialog"
+    title="Execute Proposal"
+    width="50%"
+  >
+    <div>Are you sure execute proposal {{ proposal.title }} ?</div>
+    <div v-for="cnt in actionCount" :key="cnt">
+      <span class="detail-frame2">Action #{{ cnt }}</span>
+      <span>{{ proposal.calldataDescs[cnt - 1] }}</span>
+    </div>
+    <div>Cannot undo</div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showConfirmExecuteDialog = false" round
+          >Cancel</el-button
+        >
+        <el-button
+          type="primary"
+          @click="
+            showConfirmExecuteDialog = false;
+            execute();
+          "
+          round
+        >
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+
   <el-dialog
     v-model="showConfirmVoteForDialog"
     title="Vote For Proposal"
@@ -165,6 +204,7 @@
       </span>
     </template>
   </el-dialog>
+
   <el-dialog
     v-model="showConfirmVoteAgainstDialog"
     title="Vote Against Proposal"
@@ -189,6 +229,7 @@
       </span>
     </template>
   </el-dialog>
+
   <el-dialog
     v-model="showConfirmVoteAbstainDialog"
     title="Abstain Your Vote"
@@ -213,6 +254,7 @@
       </span>
     </template>
   </el-dialog>
+
   <el-dialog
     v-model="isVoteSucceed"
     title="Vote Succeed!"
@@ -224,6 +266,7 @@
       {{ proposal.title }} (id: {{ voteRes.proposalId }})
     </div>
   </el-dialog>
+
   <el-dialog
     v-model="isCancelSucceed"
     title="Cancel Succeed!"
@@ -234,6 +277,22 @@
       Canceled proposal {{ proposal.title }} (id: {{ cancaledProposalId }})
     </div>
   </el-dialog>
+
+  <el-dialog
+    v-model="isExecuteSucceed"
+    title="Execute Succeed!"
+    width="50%"
+    @close="reloadPage"
+  >
+    <div>
+      Executed proposal {{ proposal.title }} (id: {{ executedProposalId }})
+    </div>
+    <div v-for="cnt in actionCount" :key="cnt">
+      <span class="detail-frame2">Action #{{ cnt }}</span>
+      <span>{{ proposal.calldataDescs[cnt - 1] }}</span>
+    </div>
+  </el-dialog>
+
   <el-dialog v-model="isFailed" title="Failed!" width="50%">
     <span>{{ errors }}</span>
   </el-dialog>
@@ -247,11 +306,19 @@ import { toDate, shortHash, shortAddress } from "@/utils/useCommon";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
+import { exec } from "child_process";
 
 const store = useStore();
 const walletAddress = computed(() => store.state.walletAddress);
 
-const { proposal, setProposal, canCancel, cancelProposal } = useProposal();
+const {
+  proposal,
+  setProposal,
+  canCancel,
+  cancelProposal,
+  canExecute,
+  executeProposal,
+} = useProposal();
 const { calVotesPercentage, canVote, setCanVote, voteRes, vote } = useVote();
 const route = useRoute();
 
@@ -266,7 +333,9 @@ const againstPercentage = ref(0);
 const abstainPercentage = ref(0);
 const errors = ref<string[]>([]);
 const cancaledProposalId = ref("");
+const executedProposalId = ref("");
 const showConfirmCancelDialog = ref(false);
+const showConfirmExecuteDialog = ref(false);
 const showConfirmVoteForDialog = ref(false);
 const showConfirmVoteAgainstDialog = ref(false);
 const showConfirmVoteAbstainDialog = ref(false);
@@ -277,6 +346,7 @@ const shortProposer = computed(() => shortAddress(proposal.proposer));
 const canProposalCancel = computed(() =>
   canCancel(proposal.state, proposal.proposer, walletAddress.value)
 );
+const canProposalExecute = computed(() => canExecute(proposal.state));
 const stateTagType = computed(() => {
   switch (proposal.state) {
     case stateString.active:
@@ -300,7 +370,12 @@ const stateTagType = computed(() => {
 const isVoteSucceed = computed(
   () => voteRes.proposalId != "0" && voteRes.proposalId != ""
 );
-const isCancelSucceed = computed(() => cancaledProposalId.value != "");
+const isCancelSucceed = computed(
+  () => cancaledProposalId.value != "" && cancaledProposalId.value != "0"
+);
+const isExecuteSucceed = computed(
+  () => executedProposalId.value != "" && executedProposalId.value != "0"
+);
 const isFailed = computed(() => errors.value.length > 0);
 
 const calVotes = async () => {
@@ -332,6 +407,20 @@ const cancel = () => {
       return;
     }
     cancaledProposalId.value = res.proposalId;
+  });
+};
+const execute = () => {
+  executeProposal(
+    proposal.targetContractAddrs,
+    proposal.ethValues,
+    proposal.calldatas,
+    proposal.title
+  ).then((res) => {
+    if (res.errors.length > 0) {
+      errors.value = res.errors;
+      return;
+    }
+    executedProposalId.value = res.proposalId;
   });
 };
 const voteFor = () => {

@@ -24,6 +24,7 @@
       >Connect Wallet</el-button
     >
   </header>
+
   <router-view />
 </template>
 

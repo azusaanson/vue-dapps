@@ -241,6 +241,34 @@ export const useProposal = () => {
     return false;
   };
 
+  const executeProposal = async (
+    targetContractAddrs: string[],
+    ethValues: number[],
+    encodedCalldatas: string[],
+    title: string
+  ) => {
+    const { execute } = useSignMyGovernor();
+
+    const executeRes = await execute(
+      targetContractAddrs,
+      ethValues,
+      encodedCalldatas,
+      toDescriptionHash(title)
+    );
+    if (executeRes.errors.length > 0) {
+      return { proposalId: "", errors: executeRes.errors };
+    }
+    return { proposalId: executeRes.proposalIdRes, errors: [] };
+  };
+
+  const canExecute = (state: string) => {
+    if (state === stateString.succeeded || state === stateString.queued) {
+      return true;
+    }
+
+    return false;
+  };
+
   return {
     getProposalList,
     proposal,
@@ -251,5 +279,7 @@ export const useProposal = () => {
     setCanPropose,
     cancelProposal,
     canCancel,
+    executeProposal,
+    canExecute,
   };
 };

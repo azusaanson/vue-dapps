@@ -299,6 +299,39 @@ export const useSignMyGovernor = () => {
     return { proposalIdRes, errors };
   };
 
+  const execute = async (
+    targetContractAddrs: string[],
+    ethValues: number[],
+    encodedCalldatas: string[],
+    titleHash: string
+  ) => {
+    const errors: string[] = [];
+    let proposalIdRes = "";
+    const myGovernorContractSigner = await contractSigner();
+
+    const txResponse = await myGovernorContractSigner
+      .execute(targetContractAddrs, ethValues, encodedCalldatas, titleHash)
+      .catch((err) => {
+        console.error(err);
+        errors.push(err);
+      })
+      .then();
+    if (!txResponse) {
+      return { proposalIdRes, errors };
+    }
+
+    const txReceipt = await txResponse.wait();
+    if (txReceipt) {
+      if (txReceipt.logs[0] instanceof EventLog) {
+        const { proposalId } = txReceipt.logs[0].args;
+
+        proposalIdRes = String(proposalId);
+      }
+    }
+
+    return { proposalIdRes, errors };
+  };
+
   const castVoteRes = reactive<CastVoteRes>({
     voter: "",
     proposalId: "0",
@@ -345,6 +378,7 @@ export const useSignMyGovernor = () => {
     proposeRes,
     propose,
     cancel,
+    execute,
     castVoteRes,
     castVote,
   };
