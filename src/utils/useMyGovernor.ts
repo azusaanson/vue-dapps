@@ -122,7 +122,10 @@ export const useViewMyGovernor = () => {
     }
 
     const { getBlock } = useMyToken();
-    const block = await getBlock();
+    const block = await getBlock().catch((err) => {
+      console.error(err);
+      return 0;
+    });
     if (block < snapshot) {
       return 0;
     }
