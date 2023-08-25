@@ -1,8 +1,9 @@
-import { MYGOVERNOR_ADDRESS, MYTOKEN_ADDRESS } from "@/consts/index";
-import { useMyToken } from "@/utils/useMyToken";
+import { useMyToken, myTokenAddress } from "@/utils/useMyToken";
 import { MyGovernor__factory } from "@/abis/index";
 import { ethers, Eip1193Provider, EventLog } from "ethers";
 import { reactive } from "vue";
+
+export const myGovernorAddress = process.env.VUE_APP_MYGOVERNOR_ADDRESS || "";
 
 export interface ProposeRes {
   proposalId: string;
@@ -83,7 +84,7 @@ export const useViewMyGovernor = () => {
       window.ethereum as Eip1193Provider
     );
 
-    return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, provider);
+    return MyGovernor__factory.connect(myGovernorAddress, provider);
   };
 
   const getProposalDetail = async (proposalId: string) => {
@@ -203,7 +204,7 @@ export const useSignMyGovernor = () => {
     );
     const signer = await provider.getSigner();
 
-    return MyGovernor__factory.connect(MYGOVERNOR_ADDRESS, signer);
+    return MyGovernor__factory.connect(myGovernorAddress, signer);
   };
 
   const proposeRes = reactive<ProposeRes>({
@@ -224,7 +225,7 @@ export const useSignMyGovernor = () => {
 
     const ethValues = new Array(encodedCalldatas.length).fill(0);
     const myTokenAddrs = new Array(encodedCalldatas.length).fill(
-      MYTOKEN_ADDRESS
+      myTokenAddress
     );
 
     const txResponse = await myGovernorContractSigner

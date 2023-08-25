@@ -1,10 +1,7 @@
-import {
-  MYTOKEN_ADDRESS,
-  MYTOKEN_SYMBOL,
-  MYTOKEN_DECIMALS,
-} from "@/consts/index";
+import { MYTOKEN_SYMBOL, MYTOKEN_DECIMALS } from "@/consts/index";
 import MetaMaskOnboarding from "@metamask/onboarding";
 import { MetaMaskInpageProvider } from "@metamask/providers";
+import { myTokenAddress } from "@/utils/useMyToken";
 
 declare global {
   interface Window {
@@ -24,7 +21,7 @@ export const useMetamask = () => {
           params: {
             type: "ERC20",
             options: {
-              address: MYTOKEN_ADDRESS,
+              address: myTokenAddress,
               symbol: MYTOKEN_SYMBOL,
               decimals: MYTOKEN_DECIMALS,
             },

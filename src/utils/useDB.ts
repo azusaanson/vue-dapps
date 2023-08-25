@@ -1,4 +1,3 @@
-import { FIREBASE_CONFIG } from "@/consts/index";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -33,8 +32,18 @@ export interface ProposalRecordRes {
   created_at: number;
 }
 
+const firebaseConfig = {
+  apiKey: process.env.VUE_APP_FIREBASE_API_KEY || "",
+  authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN || "",
+  projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID || "",
+  storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.VUE_APP_FIREBASE_APP_ID || "",
+  measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID || "",
+};
+
 export const useDB = () => {
-  const app = initializeApp(FIREBASE_CONFIG);
+  const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   const getProposalRecordList = async () => {

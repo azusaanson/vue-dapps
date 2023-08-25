@@ -6,16 +6,38 @@
 npm install
 ```
 
+### Set environment variables
+
+- local development
+
+```
+mv .env.local.example .env.dev.local
+```
+
+- testnet
+
+```
+mv .env.local.example .env.testnet.local
+```
+
 ### Compiles and hot-reloads for development
 
-```
-npm run serve
-```
-
-### Compiles and minifies for production
+- local development
 
 ```
-npm run build
+npm run serve-local
+```
+
+- testnet
+
+```
+npm run serve-testnet
+```
+
+### Compiles and minifies for production (testnet)
+
+```
+npm run build-testnet
 ```
 
 ### Lints and fixes files

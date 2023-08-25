@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
+    "serve-local": "vue-cli-service serve --mode dev",
+    "serve-testnet": "vue-cli-service serve --mode testnet",
+    "build-testnet": "vue-cli-service build --mode testnet",
+    "lint": "vue-cli-service lint --mode dev",
     "typechain": "typechain --target ethers-v6 --out-dir ./src/abis './src/abis/*.abi'"
   },
   "dependencies": {
